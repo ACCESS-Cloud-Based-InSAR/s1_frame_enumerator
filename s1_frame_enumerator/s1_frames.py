@@ -15,7 +15,8 @@ FRAMES_PATH = (FRAMES_DIR / 's1_frames.geojson.gzip').resolve()
 
 @lru_cache
 def get_natural_earth_land_mask() -> MultiPolygon:
-    return gpd.read_file(gpd.datasets.get_path('naturalearth_lowres')).geometry.unary_union
+    ne_land_path = gpd.datasets.get_path('naturalearth_lowres')
+    return gpd.read_file(ne_land_path).geometry.unary_union
 
 
 @lru_cache
@@ -43,7 +44,9 @@ def track_number_contained(relative_orbit_numbers_row: str,
                            track_numbers_subset: List[int]) -> bool:
     track_numbers_row = relative_orbit_numbers_row.split(',')
     track_numbers_row = list(map(int, track_numbers_row))
-    intersection = [track_number for track_number in track_numbers_row if track_number in track_numbers_subset]
+    intersection = [track_number
+                    for track_number in track_numbers_row
+                    if track_number in track_numbers_subset]
     if intersection:
         return True
     else:
@@ -57,20 +60,22 @@ def get_overlapping_s1_frames(geometry: Polygon,
     ind = df_s1_frames.intersects(geometry)
     df_overlapping_frames = df_s1_frames[ind].reset_index(drop=True)
     if track_numbers:
-        def track_number_contained_p(relative_orbit_numbers):
-            return track_number_contained(relative_orbit_numbers, track_numbers)
+        def containment_part(relative_orbit_numbers):
+            return track_number_contained(relative_orbit_numbers,
+                                          track_numbers)
 
-        ind = df_overlapping_frames.relative_orbit_numbers.map(track_number_contained_p)
-        df_overlapping_frames = df_overlapping_frames[ind].reset_index(drop=True)
+        ind = df_overlapping_frames.relative_orbit_numbers.map(containment_part)
+        df_temp = df_overlapping_frames[ind]
+        df_overlapping_frames = df_temp.reset_index(drop=True)
 
     frames = gdf2frames(df_overlapping_frames)
-
     return frames
 
 
 def gdf2frames(df_frames: gpd.GeoDataFrame) -> List[S1Frame]:
     records = df_frames.to_dict('records')
-    all_track_numbers = sorted([[int(tn) for tn in r['relative_orbit_numbers'].split(',')]
+    all_track_numbers = sorted([[int(tn)
+                                 for tn in r['relative_orbit_numbers'].split(',')]
                                 for r in records])
     return [S1Frame(frame_geometry=r['geometry'],
                     frame_id=r['frame_id'],
@@ -78,7 +83,8 @@ def gdf2frames(df_frames: gpd.GeoDataFrame) -> List[S1Frame]:
                     ) for (r, track_numbers) in zip(records, all_track_numbers)]
 
 
-def frames2gdf(s1frames: List[S1Frame], use_coverage_geometry=False) -> gpd.GeoDataFrame:
+def frames2gdf(s1frames: List[S1Frame],
+               use_coverage_geometry=False) -> gpd.GeoDataFrame:
     records = [asdict(frame) for frame in s1frames]
     geometry = [r.pop('frame_geometry') for r in records]
     coverage_geometry = [r.pop('coverage_geometry') for r in records]
