@@ -58,7 +58,7 @@ def format_results_for_sent1(results: list,
     # Want to group S1 imagery by repeat pass date - technically this could be at midnight so we do some work.
     # First we get ids based on julian date, then we group by first date in group
     julian_dates = df_formatted.start_time.map(lambda dt: dt.to_julian_date())
-    # Note this calculus depends on the repeat pass frequency of Sentinel-1 which is
+    # Note this calculus depends on the repeat pass frequency of Sentinel-1 which is 6
     df_formatted['stack_repeat_pass_id'] = ((julian_dates - julian_dates[0]) // 5).astype(int)
     # Ensure sequential (see: https://stackoverflow.com/a/15074395)
     df_formatted['stack_repeat_pass_id'] = df_formatted.groupby(['stack_repeat_pass_id']).grouper.group_info[0]
