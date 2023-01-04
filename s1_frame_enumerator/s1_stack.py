@@ -24,6 +24,7 @@ def filter_s1_stack_by_geometric_coverage_per_pass(df_stack: gpd.GeoDataFrame,
     total_coverage_geometry = unary_union(coverage_geometries)
     total_coverage_area = total_coverage_geometry.area
 
+    # warnings related to lon/lat area computation
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         intersection_area = df_stack_one_pass.geometry.intersection(total_coverage_geometry).area / total_coverage_area
@@ -49,7 +50,7 @@ def get_s1_stack(frames: List[S1Frame],
         if abs(unique_track_numbers[0] - unique_track_numbers[1]) > 1:
             raise StackFormationError('There is more than 1 track number specified and these are not sequential')
         elif n_tracks > 2:
-            raise StackFormationError('There is more than 2 track numbers specified')
+            raise StackFormationError('There are more than 2 track numbers specified')
 
     frame_geometries = [f.frame_geometry for f in frames]
     total_frame_geometry = unary_union(frame_geometries)
