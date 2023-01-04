@@ -69,5 +69,8 @@ notebooks/*.geojson
 # Ignore logs
 *.log
 
+# Data Formats
+*.json
+
 # Ignore until we have tests to run
 .github/
