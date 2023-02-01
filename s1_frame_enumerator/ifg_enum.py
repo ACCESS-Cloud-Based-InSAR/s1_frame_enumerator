@@ -84,6 +84,9 @@ def enumerate_gunw_time_series(frames: List[S1Frame],
                                            frame,
                                            df_stack,
                                            )
-                for frame in tqdm(frames, desc='Frames')
-                for (ref_date, sec_date) in tqdm(ifg_dates, desc='Date Pairs')]
+                # The order ensures we first fix dates and then iterate through
+                # frames. Ensures the data is ordered by date.
+                for (ref_date, sec_date) in tqdm(ifg_dates, desc='Date Pairs')
+                for frame in frames
+                ]
     return ifg_data
