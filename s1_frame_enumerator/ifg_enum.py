@@ -3,6 +3,7 @@ import warnings
 from typing import List
 
 import geopandas as gpd
+from shapely import STRtree
 from tqdm import tqdm
 
 from .s1_frames import S1Frame
@@ -48,12 +49,15 @@ def select_ifg_pair_from_stack(ref_date: datetime.datetime,
                                frame: S1Frame,
                                df_stack: gpd.GeoDataFrame) -> dict:
 
-    intersection_geo = df_stack.intersection(frame.coverage_geometry)
+    tree = STRtree(df_stack.geometry)
+    ind_frame = tree.query(frame.coverage_geometry, predicate="intersects")
+    df_stack_frame_temp = df_stack.iloc[ind_frame].sort_values(by='slc_id')
+    intersection_geo = df_stack_frame_temp.intersection(frame.coverage_geometry)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         coverage_ratio = intersection_geo.area / frame.coverage_geometry.area
     geo_ind = (coverage_ratio >= .01)
-    df_stack_frame = df_stack[geo_ind].reset_index(drop=True)
+    df_stack_frame = df_stack_frame_temp[geo_ind].reset_index(drop=True)
 
     ref_ind = (df_stack_frame.repeat_pass_date == ref_date)
     df_ref = df_stack_frame[ref_ind].reset_index(drop=True)
