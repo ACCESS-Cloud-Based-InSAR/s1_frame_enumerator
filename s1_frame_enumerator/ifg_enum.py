@@ -68,6 +68,8 @@ def select_ifg_pair_from_stack(ref_date: datetime.datetime,
     sec_slcs = df_sec.slc_id.tolist()
     return {'reference': ref_slcs,
             'secondary': sec_slcs,
+            'reference_date': ref_date,
+            'secondary_date': sec_date,
             'frame_id': frame.frame_id,
             'geometry': frame.frame_geometry}
 
