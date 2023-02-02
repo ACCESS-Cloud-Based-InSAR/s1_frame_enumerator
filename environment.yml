@@ -23,6 +23,7 @@ dependencies:
   # gis
   - rasterio
   - geopandas
+  - shapely
   - tqdm
   - requests
   - asf_search
