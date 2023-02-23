@@ -28,4 +28,3 @@ dependencies:
   - requests
   - asf_search
   - hyp3_sdk
-  - dem_stitcher

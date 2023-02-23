@@ -42,14 +42,14 @@ ifg_data = enumerate_gunw_time_series(frames,
 
 Then, `ifg_data` is a list of dictionaries, each corresponding to a inteferogram for a complete time series covering the specified frames covering the AOI. For example, `ifg_data[0]` returns the dictionary:
 ```
-{'reference': ['S1A_IW_SLC__1SDV_20230101T135955_20230101T140022_046591_059564_A867',
-               'S1A_IW_SLC__1SDV_20230101T140020_20230101T140047_046591_059564_AE17',
-               'S1A_IW_SLC__1SDV_20230101T140045_20230101T140112_046591_059564_EFE7'],
- 'secondary': ['S1A_IW_SLC__1SDV_20221126T135957_20221126T140024_046066_058380_8C29',
-               'S1A_IW_SLC__1SDV_20221126T140022_20221126T140049_046066_058380_FA4A',
-               'S1A_IW_SLC__1SDV_20221126T140047_20221126T140114_046066_058380_3D78'],
- 'frame_id': 19965,
- 'geometry': <POLYGON Z ((-119.05 35.392 0, -119.061 35.345 0, -119.567 35.417 0, -120.01...>}
+{'reference': ['S1A_IW_SLC__1SDV_20230218T140018_20230218T140045_047291_05ACF0_4503',
+               'S1A_IW_SLC__1SDV_20230218T140043_20230218T140110_047291_05ACF0_2591'],
+ 'secondary': ['S1A_IW_SLC__1SDV_20230113T140019_20230113T140046_046766_059B44_A9C1',
+               'S1A_IW_SLC__1SDV_20230113T140044_20230113T140111_046766_059B44_FBB8'],
+ 'reference_date': datetime.date(2023, 2, 18),
+ 'secondary_date': datetime.date(2023, 1, 13),
+ 'frame_id': 22439,
+ 'geometry': <POLYGON Z ((-121.034 34.871 0, -121.037 34.871 0, -120.807 36.008 0, -117.9...>}
 ```
 
 ## Demonstration
