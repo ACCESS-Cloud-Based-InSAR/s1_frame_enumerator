@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=>3.8
+  - pip
   # For packaging, and testing
   - flake8
   - flake8-import-order
