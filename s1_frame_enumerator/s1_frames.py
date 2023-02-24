@@ -10,7 +10,8 @@ from shapely.geometry import MultiPolygon, Polygon
 
 FRAMES_DIR = Path(__file__).parent / 'data'
 FRAMES_PATH = (FRAMES_DIR / 's1_frames_latitude_aligned.geojson.zip').resolve()
-GUNW_EXTENTS_PATH = (FRAMES_DIR / 'gunw_frame_footprints.geojson.zip').resolve()
+GUNW_EXTENTS_PATH = (FRAMES_DIR / 's1_gunw_frame_footprints.geojson.zip')
+GUNW_EXTENTS_PATH = GUNW_EXTENTS_PATH.resolve()
 
 
 @lru_cache
