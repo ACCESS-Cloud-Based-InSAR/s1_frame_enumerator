@@ -3,6 +3,7 @@ import warnings
 from typing import List
 
 import geopandas as gpd
+from shapely import STRtree
 from tqdm import tqdm
 
 from .s1_frames import S1Frame
@@ -45,28 +46,24 @@ def enumerate_dates(dates: list,
 
 def select_ifg_pair_from_stack(ref_date: datetime.datetime,
                                sec_date: datetime.datetime,
-                               frame: S1Frame,
-                               df_stack: gpd.GeoDataFrame) -> dict:
-    try:
-        # Requires >=3.11 and shapely 2.0
-        from shapely import STRtree
+                               df_stack: gpd.GeoDataFrame,
+                               frame: S1Frame = None) -> dict:
+    df_stack_subset = df_stack
+    if frame is not None:
         tree = STRtree(df_stack.geometry)
         ind_frame = tree.query(frame.coverage_geometry, predicate="intersects")
         df_stack_frame_temp = df_stack.iloc[ind_frame].sort_values(by='slc_id')
-    except ImportError:
-        ind_frame = df_stack.geometry.intersects(frame.coverage_geometry)
-        df_stack_frame_temp = df_stack.iloc[ind_frame].reset_index(drop=True)
-    intersection_geo = df_stack_frame_temp.intersection(frame.coverage_geometry)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=UserWarning)
-        coverage_ratio = intersection_geo.area / frame.coverage_geometry.area
-    geo_ind = (coverage_ratio >= .01)
-    df_stack_frame = df_stack_frame_temp[geo_ind].reset_index(drop=True)
+        intersection_geo = df_stack_frame_temp.intersection(frame.coverage_geometry)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UserWarning)
+            coverage_ratio = intersection_geo.area / frame.coverage_geometry.area
+        geo_ind = (coverage_ratio >= .01)
+        df_stack_subset = df_stack_frame_temp[geo_ind].reset_index(drop=True)
 
-    ref_ind = (df_stack_frame.repeat_pass_date == ref_date)
-    df_ref = df_stack_frame[ref_ind].reset_index(drop=True)
-    sec_ind = (df_stack_frame.repeat_pass_date == sec_date)
-    df_sec = df_stack_frame[sec_ind].reset_index(drop=True)
+    ref_ind = (df_stack_subset.repeat_pass_date == ref_date)
+    df_ref = df_stack_subset[ref_ind].reset_index(drop=True)
+    sec_ind = (df_stack_subset.repeat_pass_date == sec_date)
+    df_sec = df_stack_subset[sec_ind].reset_index(drop=True)
 
     ref_slcs = df_ref.slc_id.tolist()
     sec_slcs = df_sec.slc_id.tolist()
@@ -78,11 +75,12 @@ def select_ifg_pair_from_stack(ref_date: datetime.datetime,
             'geometry': frame.frame_geometry}
 
 
-def enumerate_gunw_time_series(frames: List[S1Frame],
-                               df_stack: gpd.GeoDataFrame,
-                               min_temporal_baseline_days: int,
+def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
+                               min_temporal_baseline_days: int = 0,
                                n_secondary_scenes_per_ref: int = 3,
+                               frames: List[S1Frame] = None
                                ) -> List[dict]:
+    frames = frames or [None]
     dates = df_stack.repeat_pass_date.unique().tolist()
     neighbors = n_secondary_scenes_per_ref
     ifg_dates = enumerate_dates(dates,
@@ -91,8 +89,8 @@ def enumerate_gunw_time_series(frames: List[S1Frame],
 
     ifg_data = [select_ifg_pair_from_stack(ref_date,
                                            sec_date,
-                                           frame,
                                            df_stack,
+                                           frame
                                            )
                 # The order ensures we first fix dates and then iterate through
                 # frames. Ensures the data is ordered by date.
