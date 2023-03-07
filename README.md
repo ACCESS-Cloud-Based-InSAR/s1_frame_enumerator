@@ -33,10 +33,10 @@ df_stack = get_s1_stack(frames)
 # Get Pairs for IFGs over Frames
 min_temporal_baseline = 30
 neighbors = 3
-ifg_data = enumerate_gunw_time_series(frames,
-                                      df_stack,
-                                      min_temporal_baseline,
+ifg_data = enumerate_gunw_time_series(df_stack,
+                                      min_temporal_baseline_days=min_temporal_baseline,
                                       n_secondary_scenes_per_ref=neighbors,
+                                      frames=frames
                                       )
 ```
 
