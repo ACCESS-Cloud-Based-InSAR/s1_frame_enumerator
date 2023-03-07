@@ -1,15 +1,36 @@
+import datetime
 import warnings
 from typing import List
 from warnings import warn
 
 import asf_search as asf
 import geopandas as gpd
+from asf_search import ASFSearchResults
 from shapely.ops import unary_union
 from tqdm import tqdm
 
 from .exceptions import StackFormationError
-from .s1_formatter import format_results_for_sent1
 from .s1_frames import S1Frame
+from .s1_stack_formatter import format_results_for_sent1_stack
+
+
+def query_slc_metadata_over_frame(frame: S1Frame,
+                                  max_results_per_frame: int = 100_000,
+                                  allowable_polarizations: List[str] = ['VV', 'VV+VH'],
+                                  start_time: datetime.datetime = None,
+                                  stop_time: datetime.datetime = None) -> ASFSearchResults:
+    results = asf.geo_search(platform=[asf.PLATFORM.SENTINEL1],
+                             intersectsWith=frame.frame_geometry.wkt,
+                             maxResults=max_results_per_frame,
+                             relativeOrbit=frame.track_numbers,
+                             polarization=allowable_polarizations,
+                             beamMode=[asf.BEAMMODE.IW],
+                             processingLevel=[asf.PRODUCT_TYPE.SLC],
+                             start=start_time,
+                             end=stop_time
+                             )
+    results = [r.geojson() for r in results]
+    return results
 
 
 def filter_s1_stack_by_geometric_coverage_per_pass(df_stack: gpd.GeoDataFrame,
@@ -40,17 +61,20 @@ def get_s1_stack(frames: List[S1Frame],
                  allowable_months: List[int] = None,
                  allowable_polarizations: List[str] = ['VV', 'VV+VH'],
                  minimum_coverage_ratio: float = .99,
-                 max_results_per_frame: int = 100_000) -> gpd.GeoDataFrame:
+                 max_results_per_frame: int = 100_000,
+                 start_time: datetime.datetime = None,
+                 stop_time: datetime.datetime = None
+                 ) -> gpd.GeoDataFrame:
 
     track_numbers = [tn for f in frames
                      for tn in f.track_numbers]
     unique_track_numbers = list(set(list(track_numbers)))
     n_tracks = len(unique_track_numbers)
     if (n_tracks > 1):
+        if n_tracks > 2:
+            raise StackFormationError('There are more than 2 track numbers specified')
         if abs(unique_track_numbers[0] - unique_track_numbers[1]) > 1:
             raise StackFormationError('There is more than 1 track number specified and these are not sequential')
-        elif n_tracks > 2:
-            raise StackFormationError('There are more than 2 track numbers specified')
 
     frame_geometries = [f.frame_geometry for f in frames]
     total_frame_geometry = unary_union(frame_geometries)
@@ -59,19 +83,17 @@ def get_s1_stack(frames: List[S1Frame],
 
     n = len(frame_geometries)
     results = []
-    # Breaking apart the geometry takes longer, but ensures we get all the results
+    # Breaking apart the frame geometries takes longer, but ensures we get all the results
     # since asf_search may not get all the images if the geometry is too large
-    for geometry in tqdm(frame_geometries, desc=f'Downloading stack from {n} frame geometries'):
-        results += asf.geo_search(platform=[asf.PLATFORM.SENTINEL1],
-                                  intersectsWith=geometry.wkt,
-                                  maxResults=max_results_per_frame,
-                                  relativeOrbit=unique_track_numbers,
-                                  polarization=allowable_polarizations,
-                                  beamMode=[asf.BEAMMODE.IW],
-                                  processingLevel=[asf.PRODUCT_TYPE.SLC]
-                                  )
+    for frame in tqdm(frames, desc=f'Downloading stack from {n} frame geometries'):
+        results += query_slc_metadata_over_frame(frame,
+                                                 max_results_per_frame=max_results_per_frame,
+                                                 allowable_polarizations=allowable_polarizations,
+                                                 start_time=start_time,
+                                                 stop_time=stop_time
+                                                 )
 
-    df = format_results_for_sent1(results, allowable_months=allowable_months)
+    df = format_results_for_sent1_stack(results, allowable_months=allowable_months)
 
     if df.empty:
         warn('There were no results returned', category=UserWarning)
@@ -79,5 +101,7 @@ def get_s1_stack(frames: List[S1Frame],
 
     if minimum_coverage_ratio:
         df = filter_s1_stack_by_geometric_coverage_per_pass(df, frames, minimum_coverage_ratio=minimum_coverage_ratio)
+        if df.empty:
+            warn('The geometric coverage using the frames coverage geometry filtered out remaining results')
 
     return df

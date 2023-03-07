@@ -1,7 +1,8 @@
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import List
+from typing import List, Optional
+from warnings import warn
 
 import geopandas as gpd
 import pandas as pd
@@ -34,19 +35,47 @@ def get_global_gunw_footprints() -> gpd.GeoDataFrame:
     return gpd.read_file(GUNW_EXTENTS_PATH)
 
 
+def get_s1_frame_row_by_id(frame_id: int) -> gpd.GeoDataFrame:
+    df_frames = get_global_s1_frames()
+    df_frame = df_frames[df_frames.frame_id == frame_id].reset_index(drop=True)
+    return df_frame
+
+
 @dataclass
 class S1Frame(object):
-    frame_geometry: Polygon
     frame_id: int
-    track_numbers: List[int]
-    use_natural_earth_land_mask: bool = True
-    coverage_geometry: MultiPolygon | Polygon = field(init=False)
+    track_numbers: Optional[List[int]] = None
+    frame_geometry: Optional[Polygon] = None
+    use_natural_earth_land_mask: Optional[bool] = True
+    coverage_geometry: Optional[MultiPolygon | Polygon] = None
 
     def __post_init__(self):
-        self.coverage_geometry = self.frame_geometry
+
+        # look up other relevant metadata from table using frame_id
+        tn_empty = (self.track_numbers is None)
+        frame_geo_empty = (self.frame_geometry is None)
+
+        if frame_geo_empty:
+            df_frame = get_s1_frame_row_by_id(self.frame_id)
+            self.frame_geometry = df_frame.geometry.iloc[0]
+
+        if tn_empty:
+            df_frame = get_s1_frame_row_by_id(self.frame_id)
+            tn_min = df_frame.track_number_min.iloc[0]
+            tn_max = df_frame.track_number_max.iloc[0]
+            self.track_numbers = list({tn_min, tn_max})
+
+        # Coverage Geometry
+        user_specified_coverage_geometry = not (self.coverage_geometry is None)
+        if not user_specified_coverage_geometry:
+            self.coverage_geometry = self.frame_geometry
         if self.use_natural_earth_land_mask:
-            land_geo = get_natural_earth_land_mask()
-            self.coverage_geometry = self.frame_geometry.intersection(land_geo)
+            if user_specified_coverage_geometry:
+                warn('Although a Natural Earth Land Mask was requested for '
+                     'coverage geometry; we are using the user geometry supplied')
+            else:
+                land_geo = get_natural_earth_land_mask()
+                self.coverage_geometry = self.frame_geometry.intersection(land_geo)
 
     def update_coverage_geo_with_custom_land_mask(self, land_geo):
         self.coverage_geometry = self.frame_geometry.intersection(land_geo)
