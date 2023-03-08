@@ -57,7 +57,8 @@ def test_get_overlapping_frames():
     # Somalia - sequential track examples
     aoi_geo = Point(41, 1.5).buffer(1)
     frames = get_overlapping_s1_frames(aoi_geo, track_numbers=[87])
-    tracks = sorted([tn for frame in frames for tn in frame.track_numbers])
+    tracks = [tn for frame in frames for tn in frame.track_numbers]
+    tracks = sorted(list(set(tracks)))
     assert tracks == [86, 87]
     assert len(frames) == 2
 
