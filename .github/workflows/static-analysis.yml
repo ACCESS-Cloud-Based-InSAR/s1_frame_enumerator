@@ -6,7 +6,7 @@ jobs:
   call-flake8-workflow:
     uses: ASFHyP3/actions/.github/workflows/reusable-flake8.yml@main
     with:
-      local_package_names: s1-frame-enumerator
+      local_package_names: s1_frame_enumerator
 
   call-secrets-analysis-workflow:
     uses: ASFHyP3/actions/.github/workflows/reusable-secrets-analysis.yml@main
