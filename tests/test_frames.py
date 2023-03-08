@@ -65,7 +65,7 @@ def test_get_overlapping_frames():
     aoi_geo = Point(41, 1.5).buffer(1)
     frames = get_overlapping_s1_frames(aoi_geo, track_numbers=[86])
     tracks = sorted([tn for frame in frames for tn in frame.track_numbers])
-    assert tracks == [86]
+    assert tracks == [86, 87]
     assert len(frames) == 1
 
 
