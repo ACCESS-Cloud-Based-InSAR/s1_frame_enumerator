@@ -22,7 +22,7 @@ jobs:
 
       - uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-name: dem-stitcher
+          environment-name: s1-frame-enumerator
           environment-file: environment.yml
           extra-specs: |
             python=${{ matrix.python-version }}
