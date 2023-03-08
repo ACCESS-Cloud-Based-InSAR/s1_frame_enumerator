@@ -65,12 +65,7 @@ __pycache__/
 *.jpg
 *.wld
 notebooks/*.geojson
+notebooks/*.json
 
 # Ignore logs
 *.log
-
-# Data Formats
-*.json
-
-# Ignore until we have tests to run
-.github/
