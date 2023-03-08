@@ -67,12 +67,19 @@ class S1Frame(object):
 
         # Coverage Geometry
         user_specified_coverage_geometry = not (self.coverage_geometry is None)
+        # Ensure Coverage Geometry contained in Frame Geometry
+        if user_specified_coverage_geometry:
+            if not self.frame_geometry.contains(self.coverage_geometry):
+                raise ValueError('Coverage geometry must be contained in Frame Geometry')
+        # Assign coverage geometry to be frame geometry if unassigned
         if not user_specified_coverage_geometry:
             self.coverage_geometry = self.frame_geometry
         if self.use_natural_earth_land_mask:
+            # Ensure user is aware that land mask is not being used
             if user_specified_coverage_geometry:
                 warn('Although a Natural Earth Land Mask was requested for '
-                     'coverage geometry; we are using the user geometry supplied')
+                     'coverage geometry; we are using the user geometry supplied',
+                     category=UserWarning)
             else:
                 land_geo = get_natural_earth_land_mask()
                 self.coverage_geometry = self.frame_geometry.intersection(land_geo)
