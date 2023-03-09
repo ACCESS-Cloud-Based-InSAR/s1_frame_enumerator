@@ -1,12 +1,12 @@
 # S1-Frame-Enumerator
 
+This library enumerates input single look complex (SLC) IDs for reference and secondary imagery to generate a time series of interferograms over an area of interest (AOI) using *fixed spatial frames*. Such SLC imagery can then be used to generate an interferometric time series. Our focus is generating ARIA S1 Geocoded Unwrapped Interferogram (ARIA-S1-GUNW), a standardized, sensor-neutral inteferometric product as described [here](https://github.com/ACCESS-Cloud-Based-InSAR/DockerizedTopsApp) using [ISCE2](https://github.com/isce-framework/isce2).
+
 ## Background
 
-This library enumerates input single look complex (SLC) IDs for reference and secondary imagery to generate a time series of interferograms over an area of interest (AOI). Such SLC imagery can then be used to generate an interforgric time series including those from an ARIA S1 Geocoded Unwrapped Interferogram (GUNW), a standardized, sensor-neutral inteferometric product as described [here](https://github.com/ACCESS-Cloud-Based-InSAR/DockerizedTopsApp).
+Sentinel-1 SLC enumeration for interferometric processing is notoriously challenging despite its simple description. This is partly because ESA frame definitions are not spatially fixed in time and it is hard to ensure complete spatial coverage across date pairs. Our fixed frame approach attempts to circumvent this challenge by ensuring SLC pairs are enunumerated across fixed spatial areas. We also ensure consistent overlap (at least 1 burst) across inteferometric products to ensure interferometric products can be stitched for downstream analysis.
 
-Sentinel-1 SLC enumeration for interferometric processing is notoriously challenging despite its simple description. This is partly because ESA frame definitions are not spatially fixed in time and it is hard to ensure complete spatial coverage across date pairs. Our fixed frame approach attempts to circumvent this challenge by ensuring SLC pairs are enunumerated across fixed spatial areas. We also ensure consistent overlap (2 bursts) across inteferometric products to ensure interferometric products can be stitched for downstream analysis.
-
-This library relies on [`asf-search`](https://github.com/asfadmin/Discovery-asf_search) to enumerate Sentinel-1 A/B pairs from fixed frames derived from ESA's burst [map](https://sar-mpc.eu/test-data-sets/). We describe the generation of the "fixed-frames" in this [repository](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-generation). Using this frame map (stored a gzip file within this library), we enumerate SLCs that cover contiguous collection of frames.
+This library relies on [`asf-search`](https://github.com/asfadmin/Discovery-asf_search) to enumerate Sentinel-1 A/B pairs from fixed frames derived from ESA's burst [map](https://sar-mpc.eu/test-data-sets/). We describe the generation of the "fixed-frames" in this [repository](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-generation). Using this frame map (stored a zip file within this library), we enumerate SLCs that cover contiguous collection of frames. The frames Northern and Souther boundaries are aligned with latitude lines to ensure GUNW products and the frame definitions are consistent. We have two datasets the latitude-aligned [frames](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/blob/58f7e62a4efd0784766da21ab7f618073fe9f347/s1_frame_enumerator/data/s1_frames_latitude_aligned.geojson.zip) and the expected GUNW product [extents](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/blob/58f7e62a4efd0784766da21ab7f618073fe9f347/s1_frame_enumerator/data/s1_gunw_frame_footprints.geojson.zip).
 
 ## Usage
 
@@ -58,7 +58,7 @@ See the [Basic_Demo.ipynb](./notebooks/Basic_Demo.ipynb) for a more complete loo
 
 ## Fixed Frames
 
-Each fixed frame consists of 10 bursts and ensures a 2 burst overlap between frames along track. We only consider frames within 1 degree of the high resolution land mask high resolution GSHHG land map [here](https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/). See the [repository](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-generation) for a complete description.
+Each fixed frame consists of approximately 8 bursts and at least 1 burst overlap between GUNW extents between frames along track. The frames themselves have only `.001` degree overlap. However, since ISCE2 process all bursts intersecting a given bounding box (dictated by our frames), the extents have at least 1 burst overlap and often 2 or 3 depending on the swath. The fixed frames are constratined to be within 1 degree of the high resolution land mask high resolution GSHHG land map [here](https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/). See the [repository](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-generation) for a complete description of the methodology.
 
 ## Installation
 
