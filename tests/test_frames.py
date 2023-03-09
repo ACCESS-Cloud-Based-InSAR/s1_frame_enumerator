@@ -4,6 +4,8 @@ import pytest
 from shapely.geometry import Point
 
 from s1_frame_enumerator import (S1Frame, frames2gdf, gdf2frames,
+                                 get_global_gunw_footprints,
+                                 get_global_s1_frames,
                                  get_overlapping_s1_frames)
 
 
@@ -82,3 +84,22 @@ def test_gdf2frames_consistency():
 
     assert frames_0 == frames_1
     assert df_frames_0.equals(df_frames_1)
+
+
+def test_to_ensure_footprints_contain_frames():
+    df_frames = get_global_s1_frames()
+    df_extents = get_global_gunw_footprints()
+
+    assert df_frames.shape[0] == df_extents.shape[0]
+
+    # Avoid the datelines where we can have multiple geometries with same frame_id
+    df_frames_subset = df_frames.cx[-150:150, :].sample(n=100)
+    frame_ids_subset = df_frames_subset.frame_id.to_list()
+
+    df_extents_subset = df_extents[df_extents.frame_id.isin(frame_ids_subset)].copy()
+
+    df_frames_subset.sort_values(by='frame_id', inplace=True)
+    df_extents_subset.sort_values(by='frame_id', inplace=True)
+
+    assert df_frames_subset.shape[0] == df_extents_subset.shape[0]
+    assert df_extents_subset.geometry.contains(df_frames_subset.geometry.buffer(-.001)).all()
