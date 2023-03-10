@@ -62,8 +62,8 @@ def enumerate_dates(dates: List[datetime.date],
     return sorted(pairs, reverse=True)
 
 
-def select_ifg_pair_from_stack(ref_date: datetime.datetime,
-                               sec_date: datetime.datetime,
+def select_ifg_pair_from_stack(ref_date: datetime.date,
+                               sec_date: datetime.date,
                                df_stack: gpd.GeoDataFrame,
                                frame: S1Frame = None) -> dict:
     df_stack_subset = df_stack
