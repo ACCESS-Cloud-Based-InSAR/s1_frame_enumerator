@@ -5,6 +5,7 @@ import pytest
 
 from s1_frame_enumerator import enumerate_dates, enumerate_gunw_time_series
 from s1_frame_enumerator.exceptions import InvalidStack
+from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS
 
 
 def test_enum_dates_with_min_baseline():
@@ -28,11 +29,11 @@ def test_enum_dates_with_3_neighbors():
     pass
 
 
-def test_select_valid_ifg_pairs_using_frame_and_date():
+def test_select_valid_ifg_pairs_using_frame_and_dates():
     pass
 
 
-def test_select_valid_ifg_pairs_using_just_date():
+def test_select_valid_ifg_pairs_using_just_dates():
     pass
 
 
@@ -45,7 +46,7 @@ def test_enum_by_track():
 
 
 @pytest.mark.parametrize("df_stack", [pd.DataFrame({'dummy': list(range(10))}),
-                                      pd.DataFrame()])
+                                      pd.DataFrame(columns=S1_COLUMNS)])
 def test_invalid_stack(df_stack):
     with pytest.raises(InvalidStack):
         enumerate_gunw_time_series(df_stack,
