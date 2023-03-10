@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-import pytest
 import geopandas as gpd
+import pytest
 
 
 @pytest.fixture(scope='session')
