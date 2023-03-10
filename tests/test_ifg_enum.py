@@ -3,8 +3,10 @@ import datetime
 import pandas as pd
 import pytest
 
-from s1_frame_enumerator import enumerate_dates, enumerate_gunw_time_series
+from s1_frame_enumerator import (S1Frame, enumerate_dates,
+                                 enumerate_gunw_time_series)
 from s1_frame_enumerator.exceptions import InvalidStack
+from s1_frame_enumerator.ifg_enum import select_ifg_pair_from_stack
 from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS
 
 
@@ -17,7 +19,8 @@ def test_enum_dates_with_min_baseline():
 
     date_pairs_sorted = sorted(date_pairs)
     # Reference (later date) comes first
-    date_pairs_expected = sorted([(d_1, d_0) for (d_0, d_1) in zip(dates[:-1], dates[1:])])
+    date_pairs_expected = sorted([(d_1, d_0)
+                                  for (d_0, d_1) in zip(dates[:-1], dates[1:])])
     assert date_pairs_expected == date_pairs_sorted
 
 
@@ -62,12 +65,22 @@ def test_enum_dates_with_3_neighbors():
     assert date_pairs_expected == date_pairs
 
 
-def test_select_valid_ifg_pairs_using_frame_and_dates():
-    pass
+def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
+    frames = [S1Frame(21248), S1Frame(21249)]
 
+    ref_date = datetime.date(2022, 12, 20)
+    sec_date = datetime.date(2022, 12, 8)
 
-def test_select_valid_ifg_pairs_using_just_dates():
-    pass
+    # There are 3 images; 2 cover each frame
+    data = select_ifg_pair_from_stack(ref_date, sec_date, sample_stack, frames[0])
+    assert len(data['reference']) == 2
+
+    data = select_ifg_pair_from_stack(ref_date, sec_date, sample_stack, frames[1])
+    assert len(data['reference']) == 2
+
+    # For none - we should get all 3
+    data = select_ifg_pair_from_stack(ref_date, sec_date, sample_stack, None)
+    assert len(data['reference']) == 3
 
 
 def test_enum_by_frame():

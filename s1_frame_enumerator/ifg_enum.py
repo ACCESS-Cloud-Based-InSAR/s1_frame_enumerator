@@ -62,8 +62,8 @@ def enumerate_dates(dates: List[datetime.date],
     return sorted(pairs, reverse=True)
 
 
-def select_ifg_pair_from_stack(ref_date: datetime.date,
-                               sec_date: datetime.date,
+def select_ifg_pair_from_stack(ref_date: datetime.datetime,
+                               sec_date: datetime.datetime,
                                df_stack: gpd.GeoDataFrame,
                                frame: S1Frame = None) -> dict:
     df_stack_subset = df_stack
@@ -85,12 +85,16 @@ def select_ifg_pair_from_stack(ref_date: datetime.date,
 
     ref_slcs = df_ref.slc_id.tolist()
     sec_slcs = df_sec.slc_id.tolist()
+
+    if (not ref_slcs) or (not sec_slcs):
+        raise ValueError('No IFG could be generated from dates and frames')
+
     return {'reference': ref_slcs,
             'secondary': sec_slcs,
             'reference_date': ref_date,
             'secondary_date': sec_date,
-            'frame_id': frame.frame_id,
-            'geometry': frame.frame_geometry}
+            'frame_id': frame.frame_id if frame else frame,
+            'geometry': frame.frame_geometry if frame else frame}
 
 
 def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
