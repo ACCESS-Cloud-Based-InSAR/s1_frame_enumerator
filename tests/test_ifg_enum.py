@@ -1,4 +1,38 @@
-def test_enum_dates():
+import datetime
+
+import pandas as pd
+import pytest
+
+from s1_frame_enumerator import enumerate_dates, enumerate_gunw_time_series
+from s1_frame_enumerator.exceptions import InvalidStack
+
+
+def test_enum_dates_with_min_baseline():
+    dates = sorted([datetime.date(2020 + i, j, 1)
+                   for i in range(2) for j in range(1, 13)])
+    date_pairs = enumerate_dates(dates,
+                                 min_temporal_baseline_days=0,
+                                 n_secondary_scenes_per_ref=1)
+
+    date_pairs_sorted = sorted(date_pairs)
+    # Reference (later date) comes first
+    date_pairs_expected = sorted([(d_1, d_0) for (d_0, d_1) in zip(dates[:-1], dates[1:])])
+    assert date_pairs_expected == date_pairs_sorted
+
+
+def test_enum_dates_with_30_day_baseline():
+    pass
+
+
+def test_enum_dates_with_3_neighbors():
+    pass
+
+
+def test_select_valid_ifg_pairs_using_frame_and_date():
+    pass
+
+
+def test_select_valid_ifg_pairs_using_just_date():
     pass
 
 
@@ -8,3 +42,12 @@ def test_enum_by_frame():
 
 def test_enum_by_track():
     pass
+
+
+@pytest.mark.parametrize("df_stack", [pd.DataFrame({'dummy': list(range(10))}),
+                                      pd.DataFrame()])
+def test_invalid_stack(df_stack):
+    with pytest.raises(InvalidStack):
+        enumerate_gunw_time_series(df_stack,
+                                   min_temporal_baseline_days=0,
+                                   n_secondary_scenes_per_ref=1)

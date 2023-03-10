@@ -6,7 +6,9 @@ import geopandas as gpd
 from shapely import STRtree
 from tqdm import tqdm
 
+from .exceptions import InvalidStack
 from .s1_frames import S1Frame
+from .s1_stack_formatter import S1_COLUMNS
 
 
 def viable_secondary_date(secondary_date: datetime.datetime,
@@ -18,9 +20,25 @@ def viable_secondary_date(secondary_date: datetime.datetime,
     return cond_1 and cond_2
 
 
-def enumerate_dates(dates: list,
+def enumerate_dates(dates: List[datetime.date],
                     min_temporal_baseline_days: int,
                     n_secondary_scenes_per_ref: int = 3) -> List[tuple]:
+    """Enumerates date pairs
+
+    Parameters
+    ----------
+    dates : List[datetime.date]
+        List of dates for enumeration (can be unsorted)
+    min_temporal_baseline_days : int
+        Ensures ifg pairs must have at least this many days between them
+    n_secondary_scenes_per_ref : int, optional
+        When creating time series, selects at most 3 viable dates to include in subsequent pairs, by default 3
+
+    Returns
+    -------
+    List[tuple]
+        (reference_date, secondary_date)
+    """
     sorted_dates = sorted(dates, reverse=True)
     queue = [sorted_dates[0]]
     dates_visited = [sorted_dates[0]]
@@ -44,8 +62,8 @@ def enumerate_dates(dates: list,
     return sorted(pairs, reverse=True)
 
 
-def select_ifg_pair_from_stack(ref_date: datetime.datetime,
-                               sec_date: datetime.datetime,
+def select_ifg_pair_from_stack(ref_date: datetime.date,
+                               sec_date: datetime.date,
                                df_stack: gpd.GeoDataFrame,
                                frame: S1Frame = None) -> dict:
     df_stack_subset = df_stack
@@ -80,6 +98,13 @@ def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
                                n_secondary_scenes_per_ref: int = 3,
                                frames: List[S1Frame] = None
                                ) -> List[dict]:
+
+    if df_stack.columns.tolist() != S1_COLUMNS:
+        raise InvalidStack('The stack dataframe must be generated using get_s1_stack')
+
+    if df_stack.empty:
+        raise InvalidStack('The stack dataframe must be non-empty')
+
     frames = frames or [None]
     dates = df_stack.repeat_pass_date.unique().tolist()
     neighbors = n_secondary_scenes_per_ref
