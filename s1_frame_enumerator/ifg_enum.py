@@ -22,7 +22,7 @@ def viable_secondary_date(secondary_date: datetime.datetime | pd.Timestamp,
     return cond_1 and cond_2
 
 
-def enumerate_dates(dates: List[datetime.date],
+def enumerate_dates(dates: List[pd.Timestamp],
                     min_temporal_baseline_days: int,
                     n_secondary_scenes_per_ref: int = 3) -> List[tuple]:
     """Enumerates date pairs
@@ -30,7 +30,7 @@ def enumerate_dates(dates: List[datetime.date],
     Parameters
     ----------
     dates : List[datetime.date]
-        List of dates for enumeration (can be unsorted)
+        List of dates for enumeration (can be unsorted). Should have timezone otherwise comparisons will be invalid.
     min_temporal_baseline_days : int
         Ensures ifg pairs must have at least this many days between them
     n_secondary_scenes_per_ref : int, optional
