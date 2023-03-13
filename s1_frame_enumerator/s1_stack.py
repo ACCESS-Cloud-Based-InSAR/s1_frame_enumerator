@@ -37,7 +37,7 @@ def filter_s1_stack_by_geometric_coverage_per_pass(df_stack: gpd.GeoDataFrame,
                                                    frames: List[S1Frame],
                                                    minimum_coverage_ratio: float = .99) -> gpd.GeoDataFrame:
 
-    df_stack_one_pass = df_stack.dissolve(by='repeat_pass_date',
+    df_stack_one_pass = df_stack.dissolve(by='repeat_pass_timestamp',
                                           aggfunc={'start_time': 'min'},
                                           as_index=False)
 
@@ -51,8 +51,8 @@ def filter_s1_stack_by_geometric_coverage_per_pass(df_stack: gpd.GeoDataFrame,
         intersection_area = df_stack_one_pass.geometry.intersection(total_coverage_geometry).area / total_coverage_area
     dissolved_ind = (intersection_area > minimum_coverage_ratio)
 
-    rounded_pass_date = df_stack_one_pass[dissolved_ind].repeat_pass_date
-    stack_ind = df_stack.repeat_pass_date.isin(rounded_pass_date)
+    rounded_pass_date = df_stack_one_pass[dissolved_ind].repeat_pass_timestamp
+    stack_ind = df_stack.repeat_pass_timestamp.isin(rounded_pass_date)
 
     return df_stack[stack_ind].reset_index(drop=True)
 

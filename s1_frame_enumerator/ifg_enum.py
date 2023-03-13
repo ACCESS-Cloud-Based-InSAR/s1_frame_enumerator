@@ -3,6 +3,8 @@ import warnings
 from typing import List
 
 import geopandas as gpd
+import pandas as pd
+import pytz
 from shapely import STRtree
 from tqdm import tqdm
 
@@ -11,8 +13,8 @@ from .s1_frames import S1Frame
 from .s1_stack_formatter import S1_COLUMNS
 
 
-def viable_secondary_date(secondary_date: datetime.datetime,
-                          reference_date: datetime.datetime,
+def viable_secondary_date(secondary_date: datetime.datetime | pd.Timestamp,
+                          reference_date: datetime.datetime | pd.Timestamp,
                           min_temporal_baseline_days: int) -> bool:
     timedelta = datetime.timedelta(days=min_temporal_baseline_days)
     cond_1 = (secondary_date <= reference_date - timedelta)
@@ -62,10 +64,16 @@ def enumerate_dates(dates: List[datetime.date],
     return sorted(pairs, reverse=True)
 
 
-def select_ifg_pair_from_stack(ref_date: datetime.date,
-                               sec_date: datetime.date,
+def select_ifg_pair_from_stack(ref_date: pd.Timestamp,
+                               sec_date: pd.Timestamp,
                                df_stack: gpd.GeoDataFrame,
                                frame: S1Frame = None) -> dict:
+    if (not isinstance(ref_date, pd.Timestamp)) or (not isinstance(ref_date, pd.Timestamp)):
+        raise TypeError('ref and secondary dates must be pd.TimeStamp')
+
+    if (ref_date.tz != pytz.UTC) or (sec_date.tz != pytz.UTC):
+        raise TypeError('Timestamp must be in UTC timezone')
+
     df_stack_subset = df_stack
     if frame is not None:
         tree = STRtree(df_stack.geometry)
@@ -78,9 +86,9 @@ def select_ifg_pair_from_stack(ref_date: datetime.date,
         geo_ind = (coverage_ratio >= .01)
         df_stack_subset = df_stack_frame_temp[geo_ind].reset_index(drop=True)
 
-    ref_ind = (df_stack_subset.repeat_pass_date == ref_date)
+    ref_ind = (df_stack_subset.repeat_pass_timestamp == ref_date)
     df_ref = df_stack_subset[ref_ind].reset_index(drop=True)
-    sec_ind = (df_stack_subset.repeat_pass_date == sec_date)
+    sec_ind = (df_stack_subset.repeat_pass_timestamp == sec_date)
     df_sec = df_stack_subset[sec_ind].reset_index(drop=True)
 
     ref_slcs = df_ref.slc_id.tolist()
@@ -110,7 +118,7 @@ def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
         raise InvalidStack('The stack dataframe must be non-empty')
 
     frames = frames or [None]
-    dates = df_stack.repeat_pass_date.unique().tolist()
+    dates = df_stack.repeat_pass_timestamp.unique().tolist()
     neighbors = n_secondary_scenes_per_ref
     ifg_dates = enumerate_dates(dates,
                                 min_temporal_baseline_days,

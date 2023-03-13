@@ -15,7 +15,7 @@ S1_COLUMNS = ['slc_id',
               'beam_mode',
               'size_gb',
               'stack_repeat_pass_id',
-              'repeat_pass_date',
+              'repeat_pass_timestamp',
               'geometry',
               ]
 
@@ -63,13 +63,16 @@ def format_results_for_sent1_stack(geojson_results: List[dict],
     # Ensure sequential (see: https://stackoverflow.com/a/15074395)
     df_formatted['stack_repeat_pass_id'] = df_formatted.groupby(['stack_repeat_pass_id']).grouper.group_info[0]
 
-    df_temp = pd.DataFrame(columns=['stack_repeat_pass_id', 'repeat_pass_date'])
+    df_temp = pd.DataFrame(columns=['stack_repeat_pass_id', 'repeat_pass_timestamp'])
     df_temp['stack_repeat_pass_id'] = df_formatted.stack_repeat_pass_id
-    df_temp['repeat_pass_date'] = df_formatted.start_time.dt.date
+    # We want the UTC date - however timestamps are serializable (dates are currently not)
+    df_temp['repeat_pass_timestamp'] = pd.to_datetime(df_formatted.start_time.dt.date)
+    # Requires UTC timzone
+    df_temp.repeat_pass_timestamp = df_temp.repeat_pass_timestamp.map(lambda ts: ts.tz_localize('UTC'))
     # Get the min date in group
-    df_repeat_pass_date = df_temp.groupby('stack_repeat_pass_id').min()
+    df_repeat_pass_timestamp = df_temp.groupby('stack_repeat_pass_id').min()
     # look up min date based on group
-    repeat_pass_dict = df_repeat_pass_date.to_dict()['repeat_pass_date']
-    df_formatted['repeat_pass_date'] = df_formatted.stack_repeat_pass_id.map(lambda rp_id: repeat_pass_dict[rp_id])
+    repeat_pass_dict = df_repeat_pass_timestamp.to_dict()['repeat_pass_timestamp']
+    df_formatted['repeat_pass_timestamp'] = df_formatted.stack_repeat_pass_id.map(lambda rp_id: repeat_pass_dict[rp_id])
 
     return df_formatted
