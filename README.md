@@ -42,12 +42,12 @@ ifg_data = enumerate_gunw_time_series(df_stack,
 
 Then, `ifg_data` is a list of dictionaries, each corresponding to a inteferogram for a complete time series covering the specified frames covering the AOI. For example, `ifg_data[0]` returns the dictionary:
 ```
-{'reference': ['S1A_IW_SLC__1SDV_20230218T140018_20230218T140045_047291_05ACF0_4503',
-               'S1A_IW_SLC__1SDV_20230218T140043_20230218T140110_047291_05ACF0_2591'],
- 'secondary': ['S1A_IW_SLC__1SDV_20230113T140019_20230113T140046_046766_059B44_A9C1',
-               'S1A_IW_SLC__1SDV_20230113T140044_20230113T140111_046766_059B44_FBB8'],
- 'reference_date': datetime.date(2023, 2, 18),
- 'secondary_date': datetime.date(2023, 1, 13),
+{'reference': ['S1A_IW_SLC__1SDV_20230302T140018_20230302T140045_047466_05B2DB_C2B5',
+  'S1A_IW_SLC__1SDV_20230302T140043_20230302T140110_047466_05B2DB_F791'],
+ 'secondary': ['S1A_IW_SLC__1SDV_20230125T140019_20230125T140046_046941_05A132_82DF',
+  'S1A_IW_SLC__1SDV_20230125T140044_20230125T140111_046941_05A132_59E7'],
+ 'reference_date': Timestamp('2023-03-02 00:00:00+0000', tz='UTC'),
+ 'secondary_date': Timestamp('2023-01-25 00:00:00+0000', tz='UTC'),
  'frame_id': 22439,
  'geometry': <POLYGON Z ((-121.034 34.871 0, -121.037 34.871 0, -120.807 36.008 0, -117.9...>}
 ```
