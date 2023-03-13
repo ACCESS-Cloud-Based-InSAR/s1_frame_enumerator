@@ -11,7 +11,7 @@ from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS
 
 
 def test_enum_dates_with_min_baseline():
-    dates = sorted([datetime.date(2020 + i, j, 1)
+    dates = sorted([datetime.datetime(2020 + i, j, 1)
                    for i in range(2) for j in range(1, 13)])
     date_pairs = enumerate_dates(dates,
                                  min_temporal_baseline_days=0,
@@ -26,7 +26,7 @@ def test_enum_dates_with_min_baseline():
 
 def test_enum_dates_with_31_day_baseline():
     n_dates = 100
-    dates = sorted([datetime.date(2021, 1, 1) + datetime.timedelta(days=j)
+    dates = sorted([datetime.datetime(2021, 1, 1) + datetime.timedelta(days=j)
                     for j in range(n_dates)])
 
     temp_baseline = 31
@@ -45,7 +45,7 @@ def test_enum_dates_with_31_day_baseline():
 
 
 def test_enum_dates_with_3_neighbors():
-    dates = [datetime.date(2021, 1, 1) + datetime.timedelta(days=j)
+    dates = [datetime.datetime(2021, 1, 1) + datetime.timedelta(days=j)
              for j in range(5)]
     date_pairs = enumerate_dates(dates,
                                  min_temporal_baseline_days=0,
@@ -68,8 +68,8 @@ def test_enum_dates_with_3_neighbors():
 def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
     frames = [S1Frame(21248), S1Frame(21249)]
 
-    ref_date = datetime.date(2022, 12, 20)
-    sec_date = datetime.date(2022, 12, 8)
+    ref_date = pd.Timestamp('2022-12-20', tz='UTC')
+    sec_date = pd.Timestamp('2022-12-8', tz='UTC')
 
     # There are 3 images; 2 cover each frame
     data = select_ifg_pair_from_stack(ref_date, sec_date, sample_stack, frames[0])
@@ -78,7 +78,7 @@ def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
     data = select_ifg_pair_from_stack(ref_date, sec_date, sample_stack, frames[1])
     assert len(data['reference']) == 2
 
-    # For none - we should get all 3
+    # For none - we should get all 3 images in the stack
     data = select_ifg_pair_from_stack(ref_date, sec_date, sample_stack, None)
     assert len(data['reference']) == 3
 

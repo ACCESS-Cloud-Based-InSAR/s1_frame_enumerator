@@ -43,7 +43,7 @@ def test_allowable_months(monkeypatch, asf_results_from_query_by_frame):
     month_num = 1
     df_stack = get_s1_stack([frame_0, frame_1], allowable_months=[month_num])
     assert not df_stack.empty
-    stack_months = df_stack.repeat_pass_date.map(lambda x: x.month)
+    stack_months = df_stack.repeat_pass_timestamp.dt.month
     assert stack_months.isin([month_num]).all()
 
 

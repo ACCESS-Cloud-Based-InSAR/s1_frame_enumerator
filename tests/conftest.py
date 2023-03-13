@@ -25,5 +25,4 @@ def asf_results_from_query_by_frame():
 def sample_stack():
     data_dir = Path(__file__).resolve().parent / 'data'
     df = gpd.read_file(data_dir / 'sample_stack_137.geojson')
-    df.repeat_pass_date = df.repeat_pass_date.dt.date
     return df
