@@ -83,12 +83,28 @@ def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
     assert len(data['reference']) == 3
 
 
-def test_enum_by_frame():
-    pass
+def test_enum_by_track(sample_stack):
+    data = enumerate_gunw_time_series(sample_stack,
+                                      min_temporal_baseline_days=0,
+                                      n_secondary_scenes_per_ref=1,
+                                      frames=None)
+    unique_dates = sample_stack.repeat_pass_timestamp.unique().tolist()
+
+    expected_num_of_ifgs = len(unique_dates) - 1
+    assert len(data) == expected_num_of_ifgs
 
 
-def test_enum_by_track():
-    pass
+def test_enum_by_frames(sample_stack):
+
+    frames = [S1Frame(21248), S1Frame(21249)]
+    data = enumerate_gunw_time_series(sample_stack,
+                                      min_temporal_baseline_days=0,
+                                      n_secondary_scenes_per_ref=1,
+                                      frames=frames)
+    unique_dates = sample_stack.repeat_pass_timestamp.unique().tolist()
+
+    expected_num_of_ifgs = (len(unique_dates) - 1) * len(frames)
+    assert len(data) == expected_num_of_ifgs
 
 
 @pytest.mark.parametrize("df_stack", [pd.DataFrame({'dummy': list(range(10))}),
