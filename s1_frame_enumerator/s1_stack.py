@@ -35,21 +35,22 @@ def query_slc_metadata_over_frame(frame: S1Frame,
 
 def filter_s1_stack_by_geometric_coverage_per_pass(df_stack: gpd.GeoDataFrame,
                                                    frames: List[S1Frame],
-                                                   minimum_coverage_ratio: float = .99) -> gpd.GeoDataFrame:
+                                                   minimum_coverage_per_pass_ratio: float = .80) -> gpd.GeoDataFrame:
 
     df_stack_one_pass = df_stack.dissolve(by='repeat_pass_timestamp',
                                           aggfunc={'start_time': 'min'},
                                           as_index=False)
 
-    coverage_geometries = [f.coverage_geometry for f in frames]
-    total_coverage_geometry = unary_union(coverage_geometries)
-    total_coverage_area = total_coverage_geometry.area
+    frame_coverage_geometries = [f.coverage_geometry for f in frames]
+    total_frame_coverage_geometry = unary_union(frame_coverage_geometries)
+    total_frame_coverage_area = total_frame_coverage_geometry.area
 
     # warnings related to lon/lat area computation
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
-        intersection_area = df_stack_one_pass.geometry.intersection(total_coverage_geometry).area / total_coverage_area
-    dissolved_ind = (intersection_area > minimum_coverage_ratio)
+        intersection_area_for_one_pass = df_stack_one_pass.geometry.intersection(total_frame_coverage_geometry).area
+        intersection_ratio_for_one_pass = intersection_area_for_one_pass / total_frame_coverage_area
+    dissolved_ind = (intersection_ratio_for_one_pass > minimum_coverage_per_pass_ratio)
 
     rounded_pass_date = df_stack_one_pass[dissolved_ind].repeat_pass_timestamp
     stack_ind = df_stack.repeat_pass_timestamp.isin(rounded_pass_date)
@@ -60,7 +61,7 @@ def filter_s1_stack_by_geometric_coverage_per_pass(df_stack: gpd.GeoDataFrame,
 def get_s1_stack(frames: List[S1Frame],
                  allowable_months: List[int] = None,
                  allowable_polarizations: List[str] = ['VV', 'VV+VH'],
-                 minimum_coverage_ratio: float = .99,
+                 minimum_coverage_ratio_per_pass: float = .80,
                  max_results_per_frame: int = 100_000,
                  start_time: datetime.datetime = None,
                  stop_time: datetime.datetime = None
@@ -99,8 +100,9 @@ def get_s1_stack(frames: List[S1Frame],
         warn('There were no results returned', category=UserWarning)
         return df
 
-    if minimum_coverage_ratio:
-        df = filter_s1_stack_by_geometric_coverage_per_pass(df, frames, minimum_coverage_ratio=minimum_coverage_ratio)
+    if minimum_coverage_ratio_per_pass:
+        df = filter_s1_stack_by_geometric_coverage_per_pass(df, frames,
+                                                            minimum_coverage_per_pass_ratio=minimum_coverage_ratio_per_pass)
         if df.empty:
             warn('The geometric coverage using the frames coverage geometry filtered out remaining results')
 
