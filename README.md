@@ -64,12 +64,19 @@ Each fixed frame consists of approximately 8 bursts and at least 1 burst overlap
 
 This library is aimed at a very specific type of enumeration of SLCs for Geocoded Interferograms derived from *Level-1 IW SLCs with VV polarization*. However, Sentinel-1 distributes a wide variety of products not all of which are available consistently globally. As such, there are situations when using this enumeration you will have to compare the imagery retrieved against [ASFSearch](https://search.asf.alaska.edu/). That said, we are using the following search parameters found [here](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/blob/c3a62f1b5b28cb9237c6c4e7ec64f24f2c7de74c/s1_frame_enumerator/s1_stack.py#L17). When comparing against ASFSearch or [`asf-search`](https://github.com/asfadmin/Discovery-asf_search), make sure to use these parameters. [Here](https://search.asf.alaska.edu/#/?zoom=6.120&center=-114.036,30.084&polygon=POLYGON((-119.4707%2031.6544,-114.0643%2031.6544,-114.0643%2034.1501,-119.4707%2034.1501,-119.4707%2031.6544))&productTypes=SLC&polarizations=VV%2BVH,VV&path=64-64&resultsLoaded=true&start=2023-02-23T08:00:00Z&end=2023-02-27T07:59:59Z&granule=S1A_IW_SLC__1SDV_20230225T015011_20230225T015041_047386_05B025_10E3-SLC) is an example of some suprising behavior: there is no `VV` or `VV+VH` on this pass when S1 images Mexico, but they exist within the US continental boundaries.
 
-Additionally, there a number of subtle issues that will require careful manual updates to the enumeration or even development. Notebooks will eventually be made to elucidate/exemplify these issues and others. Currently, we will just document those challenges we anticipate and some possible solutions:
+Generally speaking there are two competing considerations:
 
-1. An AOI has significant water making a pass disconnected - separate into two different AOIs
-2. A frame has low coverage at particular dates being at the boundary of a product distribution boundary (e.g. US and Mexico where Sentinel-1 might switch modes) - remove frame at the boundary or lower per frame or per pass coverage ratios while ensuring minimum area for ISCE2
-3. Want denser time series - trouble shoot with per frame and per pass coverage ratios. Lowering the per frame and pass ratios permits more dates to be included, but the total time series may have a lower spatial coverage area. Need to balance with frames included as well
-4. Islands chains all at once - these will just be hard
+1. Spatial coverage - the spatial interesection of all dates in the stack
+2. Temporal coverage - the number of dates included within a time series stack
+
+Increasing one, decreases the other and vice versa. In the `get_s1_stack` utilizing the ASF metadata, there is control over spatial coverage via coverage ratios (per pass coverage and per frame coverage) which invariably will lead to smaller spatial coverage because when a given pass covers less area, its intersection across dates will go down. When excluding given frames (e.g. because a frame is mostly over ocean say), this decreases spatial coverage but since Sentinel-1 data that we care about does not exist over the ocean, this may likely increase our temporal coverage..
+
+Let's be more explicit about the possible/anticipated scenarios for modifying stacks in these situtations. We hope to provide more detailed notebooks or instructions later.
+
+1. An AOI has significant water making a pass disconnected (say an AOI spanning Africa and Europe over the Mediteranean) - separate into two different AOIs over each contiguous land areas
+2. A specific frame has low coverage at numerous dates being at the boundary of a product distribution boundary (e.g. US and Mexico where Sentinel-1 might switch modes) or near a coastline - remove frame at the boundary or lower per frame or per pass coverage ratios
+3. To ensure higher number of dates in the stack: trouble shoot with per frame and per pass coverage ratios in `get_s1_stack`. Lowering the per frame and pass ratios permits more dates to be included, but the total time series may have a lower spatial coverage. ISCE2 requires a minimum number of bursts to do processing. We recommend that every frame have at least 25% coverage to be safe.
+4. Enumerating (temporally dense) interferograms over island chains will likely just be hard particulary because Sentinel-1 will turn off and on over the ocean.
 
 
 ## Installation

@@ -65,3 +65,6 @@ s1_frame_enumerator/**/*.geojson
 
 # Ignore logs
 *.log
+
+# Ignore site specific notebooks
+notebooks/Submitting_to_Hyp3-*.ipynb
