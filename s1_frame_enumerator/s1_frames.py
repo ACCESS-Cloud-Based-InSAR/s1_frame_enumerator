@@ -1,24 +1,17 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Optional
-from warnings import warn
+from typing import List
 
 import geopandas as gpd
 import pandas as pd
 from rasterio.crs import CRS
-from shapely.geometry import MultiPolygon, Polygon
+from shapely.geometry import Polygon
 
 FRAMES_DIR = Path(__file__).parent / 'data'
 FRAMES_PATH = (FRAMES_DIR / 's1_frames_latitude_aligned.geojson.zip').resolve()
 GUNW_EXTENTS_PATH = (FRAMES_DIR / 's1_gunw_frame_footprints.geojson.zip')
 GUNW_EXTENTS_PATH = GUNW_EXTENTS_PATH.resolve()
-
-
-@lru_cache
-def get_natural_earth_land_mask() -> MultiPolygon:
-    ne_land_path = gpd.datasets.get_path('naturalearth_lowres')
-    return gpd.read_file(ne_land_path).geometry.unary_union
 
 
 @lru_cache
@@ -35,8 +28,10 @@ def get_global_gunw_footprints() -> gpd.GeoDataFrame:
     return gpd.read_file(GUNW_EXTENTS_PATH)
 
 
-def get_s1_frame_row_by_id(frame_id: int) -> gpd.GeoDataFrame:
-    df_frames = get_global_s1_frames()
+def get_geometry_by_id(frame_id: int, geometry_type: str) -> gpd.GeoDataFrame:
+    if geometry_type not in ['footprint', 'frame']:
+        raise ValueError('geometry_type must be either "footprint" or "frame"')
+    df_frames = get_global_s1_frames() if geometry_type == 'frame' else get_global_gunw_footprints()
     df_frame = df_frames[df_frames.frame_id == frame_id].reset_index(drop=True)
     return df_frame
 
@@ -44,48 +39,22 @@ def get_s1_frame_row_by_id(frame_id: int) -> gpd.GeoDataFrame:
 @dataclass
 class S1Frame(object):
     frame_id: int
-    track_numbers: Optional[List[int]] = None
-    frame_geometry: Optional[Polygon] = None
-    use_natural_earth_land_mask: Optional[bool] = True
-    coverage_geometry: Optional[MultiPolygon | Polygon] = None
+    track_numbers: List[int] = field(init=False)
+    frame_geometry: Polygon = field(init=False)
+    footprint_geometry: Polygon = field(init=False)
 
     def __post_init__(self):
 
-        # look up other relevant metadata from table using frame_id
-        tn_empty = (self.track_numbers is None)
-        frame_geo_empty = (self.frame_geometry is None)
-
-        if frame_geo_empty:
-            df_frame = get_s1_frame_row_by_id(self.frame_id)
-            self.frame_geometry = df_frame.geometry.iloc[0]
-
-        if tn_empty:
-            df_frame = get_s1_frame_row_by_id(self.frame_id)
-            tn_min = df_frame.track_number_min.iloc[0]
-            tn_max = df_frame.track_number_max.iloc[0]
-            self.track_numbers = list({tn_min, tn_max})
-
-        # Coverage Geometry
-        user_specified_coverage_geometry = not (self.coverage_geometry is None)
-        # Ensure Coverage Geometry contained in Frame Geometry
-        if user_specified_coverage_geometry:
-            if not self.frame_geometry.contains(self.coverage_geometry):
-                raise ValueError('Coverage geometry must be contained in Frame Geometry')
-        # Assign coverage geometry to be frame geometry if unassigned
-        if not user_specified_coverage_geometry:
-            self.coverage_geometry = self.frame_geometry
-        if self.use_natural_earth_land_mask:
-            # Ensure user is aware that land mask is not being used
-            if user_specified_coverage_geometry:
-                warn('Although a Natural Earth Land Mask was requested for '
-                     'coverage geometry; we are using the user geometry supplied',
-                     category=UserWarning)
-            else:
-                land_geo = get_natural_earth_land_mask()
-                self.coverage_geometry = self.frame_geometry.intersection(land_geo)
-
-    def update_coverage_geo_with_custom_land_mask(self, land_geo):
-        self.coverage_geometry = self.frame_geometry.intersection(land_geo)
+        df_frame = get_geometry_by_id(self.frame_id, 'frame')
+        # Frame Geometry lookup
+        self.frame_geometry = df_frame.geometry.iloc[0]
+        # Track number lookup
+        tn_min = df_frame.track_number_min.iloc[0]
+        tn_max = df_frame.track_number_max.iloc[0]
+        self.track_numbers = list({tn_min, tn_max})
+        # Footprint lookup
+        df_footprint = get_geometry_by_id(self.frame_id, 'footprint')
+        self.footprint_geometry = df_footprint.geometry.iloc[0]
 
 
 def get_overlapping_s1_frames(geometry: Polygon,
@@ -115,34 +84,23 @@ def get_overlapping_s1_frames(geometry: Polygon,
 
 def gdf2frames(df_frames: gpd.GeoDataFrame) -> List[S1Frame]:
     records = df_frames.to_dict('records')
-
-    def combine_min_max_orbits(row):
-        tracks = [row['track_number_min'],
-                  row['track_number_max']]
-        tracks = list(set(tracks))
-        return tracks
-    all_track_numbers = df_frames.apply(combine_min_max_orbits, axis=1).tolist()
-    return [S1Frame(frame_geometry=r['geometry'],
-                    frame_id=r['frame_id'],
-                    track_numbers=track_numbers
-                    ) for (r, track_numbers) in zip(records, all_track_numbers)]
+    return [S1Frame(frame_id=r['frame_id']) for r in records]
 
 
 def frames2gdf(s1frames: List[S1Frame],
-               use_coverage_geometry=False) -> gpd.GeoDataFrame:
+               use_footprint_geometry=False) -> gpd.GeoDataFrame:
     records = [asdict(frame) for frame in s1frames]
     geometry = [r.pop('frame_geometry') for r in records]
-    coverage_geometry = [r.pop('coverage_geometry') for r in records]
+    footprint_geometry = [r.pop('footprint_geometry') for r in records]
     track_numbers = [r.pop('track_numbers') for r in records]
     track_number_min = [min(tn) for tn in track_numbers]
     track_number_max = [max(tn) for tn in track_numbers]
-    if use_coverage_geometry:
-        geometry = coverage_geometry
+    if use_footprint_geometry:
+        geometry = footprint_geometry
 
     df = pd.DataFrame(records)
     df['track_number_min'] = track_number_min
     df['track_number_max'] = track_number_max
-    df = df.drop(columns=['use_natural_earth_land_mask'])
     df = gpd.GeoDataFrame(df,
                           geometry=geometry,
                           crs=CRS.from_epsg(4326))

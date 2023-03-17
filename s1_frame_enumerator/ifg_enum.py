@@ -77,12 +77,12 @@ def select_ifg_pair_from_stack(ref_date: pd.Timestamp,
     df_stack_subset = df_stack
     if frame is not None:
         tree = STRtree(df_stack.geometry)
-        ind_frame = tree.query(frame.coverage_geometry, predicate="intersects")
+        ind_frame = tree.query(frame.frame_geometry, predicate="intersects")
         df_stack_frame_temp = df_stack.iloc[ind_frame].sort_values(by='slc_id')
-        intersection_geo = df_stack_frame_temp.intersection(frame.coverage_geometry)
+        intersection_geo = df_stack_frame_temp.intersection(frame.frame_geometry)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
-            coverage_ratio = intersection_geo.area / frame.coverage_geometry.area
+            coverage_ratio = intersection_geo.area / frame.frame_geometry.area
         geo_ind = (coverage_ratio >= .01)
         df_stack_subset = df_stack_frame_temp[geo_ind].reset_index(drop=True)
 
