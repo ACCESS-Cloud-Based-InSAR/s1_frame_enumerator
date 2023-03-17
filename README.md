@@ -60,6 +60,18 @@ See the [Basic_Demo.ipynb](./notebooks/Basic_Demo.ipynb) for a more complete loo
 
 Each fixed frame consists of approximately 8 bursts and at least 1 burst overlap between GUNW extents between frames along track. The frames themselves have only `.001` degree overlap. However, since ISCE2 process all bursts intersecting a given bounding box (dictated by our frames), the extents have at least 1 burst overlap and often 2 or 3 depending on the swath. The fixed frames are constratined to be within 1 degree of the high resolution land mask high resolution GSHHG land map [here](https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/). See the [repository](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-generation) for a complete description of the methodology.
 
+# Subtlties of Creating an Image Stack
+
+This library is aimed at a very specific type of enumeration of SLCs for Geocoded Interferograms derived from *Level-1 IW SLCs with VV polarization*. However, Sentinel-1 distributes a wide variety of products not all of which are available consistently globally. As such, there are situations when using this enumeration you will have to compare the imagery retrieved against [ASFSearch](https://search.asf.alaska.edu/). That said, we are using the following search parameters found [here](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/blob/c3a62f1b5b28cb9237c6c4e7ec64f24f2c7de74c/s1_frame_enumerator/s1_stack.py#L17). When comparing against ASFSearch or [`asf-search`](https://github.com/asfadmin/Discovery-asf_search), make sure to use these parameters. [Here](https://search.asf.alaska.edu/#/?zoom=6.120&center=-114.036,30.084&polygon=POLYGON((-119.4707%2031.6544,-114.0643%2031.6544,-114.0643%2034.1501,-119.4707%2034.1501,-119.4707%2031.6544))&productTypes=SLC&polarizations=VV%2BVH,VV&path=64-64&resultsLoaded=true&start=2023-02-23T08:00:00Z&end=2023-02-27T07:59:59Z&granule=S1A_IW_SLC__1SDV_20230225T015011_20230225T015041_047386_05B025_10E3-SLC) is an example of some suprising behavior: there is no `VV` or `VV+VH` on this pass when S1 images Mexico, but they exist within the US continental boundaries.
+
+Additionally, there a number of subtle issues that will require careful manual updates to the enumeration or even development. Notebooks will eventually be made to elucidate/exemplify these issues and others. Currently, we will just document those challenges we anticipate and some possible solutions:
+
+1. An AOI has significant water making a pass disconnected - separate into two different AOIs
+2. A frame has low coverage at particular dates being at the boundary of a product distribution boundary (e.g. US and Mexico where Sentinel-1 might switch modes) - remove frame at the boundary or lower per frame or per pass coverage ratios while ensuring minimum area for ISCE2
+3. Want denser time series - trouble shoot with per frame and per pass coverage ratios. Lowering the per frame and pass ratios permits more dates to be included, but the total time series may have a lower spatial coverage area. Need to balance with frames included as well
+4. Islands chains all at once - these will just be hard
+
+
 ## Installation
 
 1. Clone the repository and navigate to it
