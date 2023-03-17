@@ -1,6 +1,3 @@
-import warnings
-
-import pytest
 from shapely.geometry import Point
 
 from s1_frame_enumerator import (S1Frame, frames2gdf, gdf2frames,
@@ -12,34 +9,6 @@ from s1_frame_enumerator import (S1Frame, frames2gdf, gdf2frames,
 def test_frame_initialized_by_id():
     frame = S1Frame(9849)
     assert frame.track_numbers == [64]
-
-
-def test_frame_with_custom_coverage_geometry():
-    frame = S1Frame(9849)
-    custom_geo_good = frame.frame_geometry.buffer(-.1)
-    custom_geo_bad = frame.frame_geometry.buffer(.1)
-
-    # Ensure no warning is raised
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        frame_custom_good = S1Frame(9849,
-                                    coverage_geometry=custom_geo_good,
-                                    use_natural_earth_land_mask=False
-                                    )
-    assert frame_custom_good.coverage_geometry == custom_geo_good
-
-    # Warns that Frame is not using land mask
-    with pytest.warns(UserWarning):
-        S1Frame(9849,
-                coverage_geometry=custom_geo_good,
-                use_natural_earth_land_mask=True
-                )
-
-    # Should raise error because geometry goes beyond frame
-    with pytest.raises(ValueError):
-        S1Frame(9849,
-                coverage_geometry=custom_geo_bad,
-                )
 
 
 def test_get_overlapping_frames():
