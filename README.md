@@ -69,7 +69,7 @@ Generally speaking there are two competing considerations:
 1. Spatial coverage - the spatial interesection of all dates in the stack
 2. Temporal coverage - the number of dates included within a time series stack
 
-Increasing one, decreases the other and vice versa. In the `get_s1_stack` utilizing the ASF metadata, there is control over spatial coverage via coverage ratios (per pass coverage and per frame coverage) which invariably will lead to smaller spatial coverage because when a given pass covers less area, its intersection across dates will go down. When excluding given frames (e.g. because a frame is mostly over ocean say), this decreases spatial coverage but since Sentinel-1 data that we care about does not exist over the ocean, this may likely increase our temporal coverage..
+Increasing one, decreases the other and vice versa. In the `get_s1_stack` utilizing the ASF metadata, there is control over spatial coverage via coverage ratios (per pass coverage and per frame coverage) which invariably will lead to smaller spatial coverage because when a given pass covers less area, its intersection across dates will go down. When excluding given frames (e.g. because a frame is mostly over ocean say), this decreases spatial coverage but since Sentinel-1 data that we care about does not exist over the ocean, this may likely increase our temporal coverage.
 
 Let's be more explicit about the possible/anticipated scenarios for modifying stacks in these situtations. We hope to provide more detailed notebooks or instructions later.
 
