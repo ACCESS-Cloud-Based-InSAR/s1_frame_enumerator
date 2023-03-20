@@ -1,9 +1,14 @@
+import warnings
+
+import pandas as pd
+import pytest
 from shapely.geometry import Point
 
 from s1_frame_enumerator import (S1Frame, frames2gdf, gdf2frames,
                                  get_global_gunw_footprints,
                                  get_global_s1_frames,
                                  get_overlapping_s1_frames)
+from s1_frame_enumerator.s1_frames import get_geometry_by_id
 
 
 def test_frame_initialized_by_id():
@@ -65,10 +70,49 @@ def test_to_ensure_footprints_contain_frames():
     df_frames_subset = df_frames.cx[-150:150, :].sample(n=100)
     frame_ids_subset = df_frames_subset.frame_id.to_list()
 
-    df_extents_subset = df_extents[df_extents.frame_id.isin(frame_ids_subset)].copy()
+    ind0 = df_extents.frame_id.isin(frame_ids_subset)
+    df_extents_subset = df_extents[ind0].copy()
 
     df_frames_subset.sort_values(by='frame_id', inplace=True)
     df_extents_subset.sort_values(by='frame_id', inplace=True)
 
     assert df_frames_subset.shape[0] == df_extents_subset.shape[0]
     assert df_extents_subset.geometry.contains(df_frames_subset.geometry.buffer(-.001)).all()
+
+
+def test_frames_at_dateline():
+    # Make sure no warnings are passed
+    for frame_id in [22738, 4553]:
+        # When no hemisphere is passed, raise a UserWarning
+        with pytest.warns(UserWarning):
+            S1Frame(frame_id)
+        # When hemisphere is passed - no warning should be raised
+        for hemisphere in ['east', 'west']:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                S1Frame(frame_id, hemisphere=hemisphere)
+
+
+def test_large_frame_extent_error():
+    df_frame_0 = get_geometry_by_id(4553, 'frame', hemisphere='west')
+    df_frame_1 = get_geometry_by_id(4553, 'frame', hemisphere='east')
+    df_frame_2 = get_geometry_by_id(4554, 'frame', hemisphere='east')
+
+    with pytest.raises(ValueError):
+        df = pd.concat([df_frame_0, df_frame_1], axis=0)
+        gdf2frames(df)
+
+    df = pd.concat([df_frame_1, df_frame_2], axis=0)
+    assert len(gdf2frames(df)) == 2
+
+
+def test_frame_construction_error():
+    with pytest.raises(ValueError):
+        # Frame does not exist
+        S1Frame(-1)
+
+    with pytest.raises(ValueError):
+        S1Frame(100, hemisphere='wrong')
+
+    with pytest.raises(ValueError):
+        S1Frame(100, hemisphere='EAST')
