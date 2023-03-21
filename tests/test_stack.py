@@ -2,10 +2,11 @@ import pytest
 from shapely.ops import unary_union
 
 import s1_frame_enumerator.s1_stack as s1_stack
-from s1_frame_enumerator import S1Frame, get_s1_stack, frames2gdf
+from s1_frame_enumerator import S1Frame, frames2gdf, get_s1_stack
 from s1_frame_enumerator.exceptions import StackFormationError
-from s1_frame_enumerator.s1_stack import (filter_s1_stack_by_geometric_coverage_per_frame,
-                                          filter_s1_stack_by_geometric_coverage_per_pass)
+from s1_frame_enumerator.s1_stack import (
+    filter_s1_stack_by_geometric_coverage_per_frame,
+    filter_s1_stack_by_geometric_coverage_per_pass)
 from s1_frame_enumerator.s1_stack_formatter import (
     S1_COLUMNS, format_results_for_sent1_stack)
 
