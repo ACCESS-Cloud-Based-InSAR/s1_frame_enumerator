@@ -26,3 +26,10 @@ def sample_stack():
     data_dir = Path(__file__).resolve().parent / 'data'
     df = gpd.read_file(data_dir / 'sample_stack_137.geojson')
     return df
+
+
+@pytest.fixture(scope='session')
+def CA_20210915_resp():
+    data_dir = Path(__file__).resolve().parent / 'data'
+    json_data = json.load(open(data_dir / 'CA-subset_2021-09-14_asf_results.json'))
+    return json_data

@@ -2,9 +2,12 @@ import pytest
 from shapely.ops import unary_union
 
 import s1_frame_enumerator.s1_stack as s1_stack
-from s1_frame_enumerator import S1Frame, get_s1_stack
+from s1_frame_enumerator import S1Frame, get_s1_stack, frames2gdf
 from s1_frame_enumerator.exceptions import StackFormationError
-from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS
+from s1_frame_enumerator.s1_stack import (filter_s1_stack_by_geometric_coverage_per_frame,
+                                          filter_s1_stack_by_geometric_coverage_per_pass)
+from s1_frame_enumerator.s1_stack_formatter import (
+    S1_COLUMNS, format_results_for_sent1_stack)
 
 
 def test_disconnected_frames_and_same_track():
@@ -72,3 +75,59 @@ def test_sequential_tracks(monkeypatch, asf_results_from_query_by_frame):
     df_stack = get_s1_stack(frames)
     track_numbers = sorted(df_stack.track_number.unique().tolist())
     assert track_numbers == [86, 87]
+
+
+def filter_per_pass(CA_20210915_resp):
+    # The resp data for one date for the first 2 frames
+    data_json = CA_20210915_resp
+    df_resp = format_results_for_sent1_stack(data_json)
+
+    frame_0 = S1Frame(9847)
+    frame_1 = S1Frame(9848)
+    frame_2 = S1Frame(9849)
+
+    frames = [frame_0, frame_1, frame_2]
+    df_frames = frames2gdf(frames)
+    frame_union = df_frames.geometry.unary_union
+    int_geo = (frame_union).intersection(df_resp.geometry.unary_union)
+    pass_ratio = int_geo.area / frame_union.area
+
+    r = pass_ratio - .01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_pass(df_resp,
+                                                               frames,
+                                                               minimum_coverage_per_pass_ratio=r)
+    assert df_filter.empty
+
+    r = pass_ratio + .01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_pass(df_resp,
+                                                               frames,
+                                                               minimum_coverage_per_pass_ratio=r)
+    assert df_filter.shape[0] == df_resp.shape[0]
+
+
+def filter_per_frame(CA_20210915_resp):
+    # The resp data for one date for the first 2 frames
+    data_json = CA_20210915_resp
+    df_resp = format_results_for_sent1_stack(data_json)
+
+    frame_0 = S1Frame(9847)
+    frame_1 = S1Frame(9848)
+    frame_2 = S1Frame(9849)
+    frames = [frame_0, frame_1, frame_2]
+
+    pass_geometry = df_resp.geometry.unary_union
+    ratio_frame_int = [pass_geometry.intersection(f.footprint_geometry).area / f.footprint_geometry.area
+                       for f in frames]
+    min_frame_coverage = min(ratio_frame_int)
+
+    r = min_frame_coverage - .01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_frame(df_resp,
+                                                                frames,
+                                                                minimum_coverage_ratio_per_frame=r)
+    assert df_filter.empty
+
+    r = min_frame_coverage + .01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_frame(df_resp,
+                                                                frames,
+                                                                minimum_coverage_ratio_per_frame=r)
+    assert df_filter.shape[0] == df_resp.shape[0]
