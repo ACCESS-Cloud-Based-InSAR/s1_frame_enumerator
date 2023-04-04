@@ -65,6 +65,10 @@ class S1Frame(object):
                                       hemisphere=self.hemisphere)
         # Frame Geometry lookup
         self.frame_geometry = df_frame.geometry.iloc[0]
+        # Recompute hemisphere if necessary
+        if self.hemisphere is None:
+            c_x = self.frame_geometry.centroid.x
+            self.hemisphere = 'west' if c_x < 0 else 'west'
         # Track number lookup
         tn_min = df_frame.track_number_min.iloc[0]
         tn_max = df_frame.track_number_max.iloc[0]
