@@ -4,7 +4,6 @@ from typing import List
 
 import geopandas as gpd
 import pandas as pd
-import pytz
 from shapely import STRtree
 from tqdm import tqdm
 
@@ -71,7 +70,9 @@ def select_ifg_pair_from_stack(ref_date: pd.Timestamp,
     if (not isinstance(ref_date, pd.Timestamp)) or (not isinstance(ref_date, pd.Timestamp)):
         raise TypeError('ref and secondary dates must be pd.TimeStamp')
 
-    if (ref_date.tz != pytz.UTC) or (sec_date.tz != pytz.UTC):
+    # It appears the datetime timezone is not stable either because of DAAC API types
+    # or pandas - converting to string should enusre consistency
+    if (str(ref_date.tz).lower() != 'utc') or (str(sec_date.tz).lower() != 'utc'):
         raise TypeError('Timestamp must be in UTC timezone')
 
     df_stack_subset = df_stack
