@@ -4,7 +4,6 @@ from typing import List
 
 import geopandas as gpd
 import pandas as pd
-import pytz
 from shapely import STRtree
 from tqdm import tqdm
 
