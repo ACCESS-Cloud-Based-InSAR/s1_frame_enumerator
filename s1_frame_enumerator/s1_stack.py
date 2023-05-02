@@ -13,7 +13,7 @@ from .exceptions import StackFormationError
 from .s1_frames import S1Frame
 from .s1_stack_formatter import format_results_for_sent1_stack
 
-MINIMUM_PER_FRAME_RATIO = .25
+MINIMUM_PER_FRAME_RATIO = .20
 
 
 def query_slc_metadata_over_frame(frame: S1Frame,
