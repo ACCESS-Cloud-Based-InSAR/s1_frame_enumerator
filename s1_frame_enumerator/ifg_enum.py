@@ -23,7 +23,8 @@ def viable_secondary_date(secondary_date: datetime.datetime | pd.Timestamp,
 
 def enumerate_dates(dates: List[pd.Timestamp],
                     min_temporal_baseline_days: int,
-                    n_secondary_scenes_per_ref: int = 3) -> List[tuple]:
+                    n_secondary_scenes_per_ref: int = 3,
+                    n_init_seeds: int = 1) -> List[tuple]:
     """Enumerates date pairs
 
     Parameters
@@ -34,6 +35,8 @@ def enumerate_dates(dates: List[pd.Timestamp],
         Ensures ifg pairs must have at least this many days between them
     n_secondary_scenes_per_ref : int, optional
         When creating time series, selects at most 3 viable dates to include in subsequent pairs, by default 3
+    n_init_seeds : int, optional
+        How many initial dates to populate the queue with; most recent dates are seeds, by default 1. Must be >= 1.
 
     Returns
     -------
@@ -41,7 +44,7 @@ def enumerate_dates(dates: List[pd.Timestamp],
         (reference_date, secondary_date)
     """
     sorted_dates = sorted(dates, reverse=True)
-    queue = [sorted_dates[0]]
+    queue = sorted_dates[:n_init_seeds]
     dates_visited = [sorted_dates[0]]
     pairs = []
 
@@ -60,6 +63,10 @@ def enumerate_dates(dates: List[pd.Timestamp],
                 dates_visited.append(sec_date)
                 queue.append(sec_date)
 
+    # Have to de-duplicate pairs (i.e. ensure uniqueness of items) due to seeds.
+    # There are situations when a visited date may be removed from the queue
+    # And then added back with multiple initial date seeds.
+    pairs = list(set(pairs))
     return sorted(pairs, reverse=True)
 
 
@@ -109,7 +116,8 @@ def select_ifg_pair_from_stack(ref_date: pd.Timestamp,
 def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
                                min_temporal_baseline_days: int = 0,
                                n_secondary_scenes_per_ref: int = 3,
-                               frames: List[S1Frame] = None
+                               frames: List[S1Frame] = None,
+                               n_init_seeds: int = 1,
                                ) -> List[dict]:
 
     if df_stack.columns.tolist() != S1_COLUMNS:
@@ -123,7 +131,8 @@ def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
     neighbors = n_secondary_scenes_per_ref
     ifg_dates = enumerate_dates(dates,
                                 min_temporal_baseline_days,
-                                n_secondary_scenes_per_ref=neighbors)
+                                n_secondary_scenes_per_ref=neighbors,
+                                n_init_seeds=n_init_seeds)
 
     ifg_data = [select_ifg_pair_from_stack(ref_date,
                                            sec_date,

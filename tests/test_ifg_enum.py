@@ -30,39 +30,46 @@ def test_enum_dates_with_31_day_baseline():
                     for j in range(n_dates)])
 
     temp_baseline = 31
-    date_pairs = enumerate_dates(dates,
-                                 min_temporal_baseline_days=temp_baseline,
-                                 n_secondary_scenes_per_ref=1)
+    for n_seeds in range(1, 5):
+        date_pairs = enumerate_dates(dates,
+                                     min_temporal_baseline_days=temp_baseline,
+                                     n_secondary_scenes_per_ref=1,
+                                     n_init_seeds=n_seeds)
 
-    date_pairs_sorted = sorted(date_pairs)
-    # Reference (later date) comes first
-    d0 = dates[-1]
-    delta = datetime.timedelta(days=temp_baseline)
-    n_pairs = n_dates // temp_baseline
-    date_pairs_expected = sorted([(d0 - k * delta, d0 - (k + 1) * delta)
-                                  for k in range(n_pairs)])
-    assert date_pairs_expected == date_pairs_sorted
+        date_pairs_sorted = sorted(date_pairs)
+        # Reference (later date) comes first
+        seeds = dates[-n_seeds:]
+        delta = datetime.timedelta(days=temp_baseline)
+        n_pairs = n_dates // temp_baseline
+        date_pairs_expected = [(d0 - k * delta, d0 - (k + 1) * delta)
+                               for k in range(n_pairs) for d0 in seeds]
+        date_pairs_expected = list(set(date_pairs_expected))
+        date_pairs_expected = sorted(date_pairs_expected)
+        assert date_pairs_expected == date_pairs_sorted
 
 
 def test_enum_dates_with_3_neighbors():
     dates = [datetime.datetime(2021, 1, 1) + datetime.timedelta(days=j)
              for j in range(5)]
-    date_pairs = enumerate_dates(dates,
-                                 min_temporal_baseline_days=0,
-                                 n_secondary_scenes_per_ref=3)
 
-    jan_5 = dates[-1]
-    day = datetime.timedelta(days=1)
-    date_pairs_expected = [(jan_5, jan_5 - day),
-                           (jan_5, jan_5 - 2 * day),
-                           (jan_5, jan_5 - 3 * day),
-                           (jan_5 - day, jan_5 - 2 * day),
-                           (jan_5 - day, jan_5 - 3 * day),
-                           (jan_5 - day, jan_5 - 4 * day),
-                           (jan_5 - 2 * day, jan_5 - 3 * day),
-                           (jan_5 - 2 * day, jan_5 - 4 * day),
-                           (jan_5 - 3 * day, jan_5 - 4 * day)]
-    assert date_pairs_expected == date_pairs
+    for n_seeds in range(1, 5):
+        date_pairs = enumerate_dates(dates,
+                                    min_temporal_baseline_days=0,
+                                    n_secondary_scenes_per_ref=3,
+                                    n_init_seeds=n_seeds)
+
+        jan_5 = dates[-1]
+        day = datetime.timedelta(days=1)
+        date_pairs_expected = [(jan_5, jan_5 - day),
+                            (jan_5, jan_5 - 2 * day),
+                            (jan_5, jan_5 - 3 * day),
+                            (jan_5 - day, jan_5 - 2 * day),
+                            (jan_5 - day, jan_5 - 3 * day),
+                            (jan_5 - day, jan_5 - 4 * day),
+                            (jan_5 - 2 * day, jan_5 - 3 * day),
+                            (jan_5 - 2 * day, jan_5 - 4 * day),
+                            (jan_5 - 3 * day, jan_5 - 4 * day)]
+        assert date_pairs_expected == date_pairs
 
 
 def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
