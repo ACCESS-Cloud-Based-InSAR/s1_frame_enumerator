@@ -30,6 +30,7 @@ def test_enum_dates_with_31_day_baseline():
                     for j in range(n_dates)])
 
     temp_baseline = 31
+    n_pairs_lower_seed = 0
     for n_seeds in range(1, 5):
         date_pairs = enumerate_dates(dates,
                                      min_temporal_baseline_days=temp_baseline,
@@ -46,6 +47,9 @@ def test_enum_dates_with_31_day_baseline():
         date_pairs_expected = list(set(date_pairs_expected))
         date_pairs_expected = sorted(date_pairs_expected)
         assert date_pairs_expected == date_pairs_sorted
+        n_pairs = len(date_pairs_sorted)
+        assert n_pairs_lower_seed < n_pairs
+        n_pairs_lower_seed = n_pairs
 
 
 def test_enum_dates_with_3_neighbors():
