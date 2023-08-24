@@ -58,21 +58,21 @@ def test_enum_dates_with_3_neighbors():
 
     for n_seeds in range(1, 5):
         date_pairs = enumerate_dates(dates,
-                                    min_temporal_baseline_days=0,
-                                    n_secondary_scenes_per_ref=3,
-                                    n_init_seeds=n_seeds)
+                                     min_temporal_baseline_days=0,
+                                     n_secondary_scenes_per_ref=3,
+                                     n_init_seeds=n_seeds)
 
         jan_5 = dates[-1]
         day = datetime.timedelta(days=1)
         date_pairs_expected = [(jan_5, jan_5 - day),
-                            (jan_5, jan_5 - 2 * day),
-                            (jan_5, jan_5 - 3 * day),
-                            (jan_5 - day, jan_5 - 2 * day),
-                            (jan_5 - day, jan_5 - 3 * day),
-                            (jan_5 - day, jan_5 - 4 * day),
-                            (jan_5 - 2 * day, jan_5 - 3 * day),
-                            (jan_5 - 2 * day, jan_5 - 4 * day),
-                            (jan_5 - 3 * day, jan_5 - 4 * day)]
+                               (jan_5, jan_5 - 2 * day),
+                               (jan_5, jan_5 - 3 * day),
+                               (jan_5 - day, jan_5 - 2 * day),
+                               (jan_5 - day, jan_5 - 3 * day),
+                               (jan_5 - day, jan_5 - 4 * day),
+                               (jan_5 - 2 * day, jan_5 - 3 * day),
+                               (jan_5 - 2 * day, jan_5 - 4 * day),
+                               (jan_5 - 3 * day, jan_5 - 4 * day)]
         assert date_pairs_expected == date_pairs
 
 
