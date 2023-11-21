@@ -99,6 +99,12 @@ def select_ifg_pair_from_stack(ref_date: pd.Timestamp,
     sec_ind = (df_stack_subset.repeat_pass_timestamp == sec_date)
     df_sec = df_stack_subset[sec_ind].reset_index(drop=True)
 
+    total_intersection_geometry = None
+    if frame is None:
+        ref_geo = df_ref.geometry.unary_union
+        sec_geo = df_sec.geometry.unary_union
+        total_intersection_geometry = ref_geo.intersection(sec_geo)
+
     ref_slcs = df_ref.slc_id.tolist()
     sec_slcs = df_sec.slc_id.tolist()
 
@@ -110,7 +116,7 @@ def select_ifg_pair_from_stack(ref_date: pd.Timestamp,
             'reference_date': ref_date,
             'secondary_date': sec_date,
             'frame_id': frame.frame_id if frame else frame,
-            'geometry': frame.frame_geometry if frame else frame}
+            'geometry': frame.frame_geometry if frame else total_intersection_geometry}
 
 
 def enumerate_gunw_time_series(df_stack: gpd.GeoDataFrame,
