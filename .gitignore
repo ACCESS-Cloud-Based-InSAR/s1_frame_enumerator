@@ -68,3 +68,4 @@ s1_frame_enumerator/**/*.geojson
 
 # Ignore site specific notebooks
 notebooks/Submitting_to_Hyp3-*.ipynb
+notebooks/Untitled*.ipynb
