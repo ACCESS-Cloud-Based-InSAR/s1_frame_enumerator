@@ -1,4 +1,4 @@
-# S1-Frame-Enumerator
+# S1_Frame_Enumerator
 
 This library enumerates input single look complex (SLC) IDs for reference and secondary imagery to generate a time series of interferograms over an area of interest (AOI) using *fixed spatial frames*. Such SLC imagery can then be used to generate an interferometric time series. Our focus is generating ARIA S1 Geocoded Unwrapped Interferogram (ARIA-S1-GUNW), a standardized, sensor-neutral inteferometric product as described [here](https://github.com/ACCESS-Cloud-Based-InSAR/DockerizedTopsApp) using [ISCE2](https://github.com/isce-framework/isce2).
 
