@@ -18,9 +18,10 @@ GUNW_EXTENTS_PATH = GUNW_EXTENTS_PATH.resolve()
 @lru_cache
 def get_global_s1_frames() -> gpd.GeoDataFrame:
     df_frames = gpd.read_file(FRAMES_PATH)
-    return df_frames.rename(
+    df_frames = df_frames.rename(
         columns={'relative_orbit_number_min': 'track_number_min', 'relative_orbit_number_max': 'track_number_max'}
     )
+    return df_frames
 
 
 @lru_cache
