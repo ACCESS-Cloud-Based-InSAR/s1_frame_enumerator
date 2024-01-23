@@ -5,34 +5,30 @@ import pandas as pd
 from rasterio.crs import CRS
 from shapely.geometry import shape
 
-S1_COLUMNS = ['slc_id',
-              'start_time',
-              'stop_time',
-              'url',
-              'track_number',
-              'polarization',
-              'orbit',
-              'beam_mode',
-              'size_gb',
-              'stack_repeat_pass_id',
-              'repeat_pass_timestamp',
-              'geometry',
-              ]
+S1_COLUMNS = [
+    'slc_id',
+    'start_time',
+    'stop_time',
+    'url',
+    'track_number',
+    'polarization',
+    'orbit',
+    'beam_mode',
+    'size_gb',
+    'stack_repeat_pass_id',
+    'repeat_pass_timestamp',
+    'geometry',
+]
 
 
-def format_results_for_sent1_stack(geojson_results: List[dict],
-                                   allowable_months: List[int] = None) -> gpd.GeoDataFrame:
+def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months: List[int] = None) -> gpd.GeoDataFrame:
     geometry = [shape(r['geometry']) for r in geojson_results]
     data = [r['properties'] for r in geojson_results]
 
     df_asf = pd.DataFrame(data)
-    df_asf = gpd.GeoDataFrame(df_asf,
-                              geometry=geometry,
-                              crs=CRS.from_epsg(4326))
+    df_asf = gpd.GeoDataFrame(df_asf, geometry=geometry, crs=CRS.from_epsg(4326))
 
-    df_formatted = gpd.GeoDataFrame(columns=S1_COLUMNS,
-                                    geometry=[],
-                                    crs=CRS.from_epsg(4326))
+    df_formatted = gpd.GeoDataFrame(columns=S1_COLUMNS, geometry=[], crs=CRS.from_epsg(4326))
     if df_asf.empty:
         return df_formatted
 
