@@ -27,5 +27,5 @@ dependencies:
   - shapely=>2.0
   - tqdm
   - requests
-  - asf_search
+  - asf_search>=6.7.3
   - hyp3_sdk
