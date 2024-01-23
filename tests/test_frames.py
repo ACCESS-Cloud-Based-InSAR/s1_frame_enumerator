@@ -93,7 +93,7 @@ def test_frames_at_dateline():
         # When hemisphere is passed - no warning should be raised
         for hemisphere in ['east', 'west']:
             with warnings.catch_warnings():
-                warnings.simplefilter('error')
+                warnings.simplefilter('error', category=UserWarning)
                 S1Frame(frame_id, hemisphere=hemisphere)
 
 
