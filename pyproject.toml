@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 's1_frame_enumerator'
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 authors = [
     { name = 'Charlie Marshak, David Bekaert, Joseph Kennedy, Sim Sangha, and ACCESS Team ' },
 ]
@@ -15,7 +15,6 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
 ]
 
@@ -34,8 +33,8 @@ develop = [
 ]
 
 [project.urls]
-Homepage = 'https://github.com/OPERA-Cal-Val/tile-mate'
-'Bug Tracker' = 'https://github.com/OPERA-Cal-Val/tile-mate/issues'
+Homepage = 'https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator'
+'Bug Tracker' = 'https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/issues'
 
 [tool.setuptools]
 include-package-data = true
