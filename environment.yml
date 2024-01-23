@@ -2,7 +2,8 @@ name: s1-frame-enumerator
 channels:
   - conda-forge
 dependencies:
-  - python=>3.10
+  - python=>3.11  # required for shapely 2.0.0
+  - pip
   # For packaging, and testing
   - flake8
   - flake8-import-order
@@ -23,8 +24,8 @@ dependencies:
   # gis
   - rasterio
   - geopandas
+  - shapely=>2.0
   - tqdm
   - requests
-  - asf_search
+  - asf_search>=6.7.3
   - hyp3_sdk
-  - dem_stitcher

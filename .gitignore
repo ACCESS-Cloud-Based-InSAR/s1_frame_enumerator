@@ -14,11 +14,6 @@ deprecated/
 # Vim files
 *.sw[mnop]
 
-
-# Data Files
-*.zip
-*.tar.gz
-
 # .pyenv files
 .python-version
 
@@ -43,7 +38,7 @@ __pycache__/
 /dist/
 
 # Python egg metadata, regenerated from source files by setuptools.
-/*.egg-info
+**/*.egg-info
 
 # Environments
 .env
@@ -64,10 +59,13 @@ __pycache__/
 *.kmz
 *.jpg
 *.wld
-notebooks/*.geojson
+notebooks/**/*.geojson
+notebooks/**/*.json
+s1_frame_enumerator/**/*.geojson
 
 # Ignore logs
 *.log
 
-# Ignore until we have tests to run
-.github/
+# Ignore site specific notebooks
+notebooks/Submitting_to_Hyp3-*.ipynb
+notebooks/Untitled*.ipynb
