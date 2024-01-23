@@ -1,2 +1,74 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = ['setuptools>=60', 'setuptools-scm>=8.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 's1_frame_enumerator'
+requires-python = '>=3.10'
+authors = [
+    { name = 'Charlie Marshak, David Bekaert, Joseph Kennedy, Sim Sangha, and ACCESS Team ' },
+]
+description = 'Enumerate interferogram pairs from ARIA spatially fixed frames'
+license = { text = 'Apache-2.0' }
+classifiers = [
+    'Intended Audience :: Science/Research',
+    'Natural Language :: English',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+]
+
+dynamic = ['version', 'readme']
+
+dependencies = ['geopandas', 'rasterio', 'asf_search', 'tqdm', 'requests']
+
+[project.optional-dependencies]
+develop = [
+    'pytest',
+    'pytest-cov',
+    'flake8',
+    'flake8-import-order',
+    'flake8-blind-except',
+    'flake8-builtins',
+]
+
+[project.urls]
+Homepage = 'https://github.com/OPERA-Cal-Val/tile-mate'
+'Bug Tracker' = 'https://github.com/OPERA-Cal-Val/tile-mate/issues'
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ['src']
+exclude = ['notebooks*', 'tests*']
+
+[tool.setuptools.dynamic]
+readme = { file = ['README.md'], content-type = 'text/markdown' }
+
+[tool.setuptools_scm]
+
+[tool.ruff]
+line-length = 120
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    '.eggs',
+    '.git',
+    '.ipynb_checkpoints',
+    '.mypy_cache',
+    '.pytest_cache',
+    '.ruff_cache',
+    '.vscode',
+    '__pypackages__',
+    '_build',
+    'build',
+    'dist',
+    'site-packages',
+]
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = 'single'
