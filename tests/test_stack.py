@@ -6,9 +6,9 @@ from s1_frame_enumerator import S1Frame, frames2gdf, get_s1_stack
 from s1_frame_enumerator.exceptions import StackFormationError
 from s1_frame_enumerator.s1_stack import (
     filter_s1_stack_by_geometric_coverage_per_frame,
-    filter_s1_stack_by_geometric_coverage_per_pass)
-from s1_frame_enumerator.s1_stack_formatter import (
-    S1_COLUMNS, format_results_for_sent1_stack)
+    filter_s1_stack_by_geometric_coverage_per_pass,
+)
+from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS, format_results_for_sent1_stack
 
 
 def test_disconnected_frames_and_same_track():
@@ -93,16 +93,12 @@ def filter_per_pass(CA_20210915_resp):
     int_geo = (frame_union).intersection(df_resp.geometry.unary_union)
     pass_ratio = int_geo.area / frame_union.area
 
-    r = pass_ratio - .01
-    df_filter = filter_s1_stack_by_geometric_coverage_per_pass(df_resp,
-                                                               frames,
-                                                               minimum_coverage_per_pass_ratio=r)
+    r = pass_ratio - 0.01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_pass(df_resp, frames, minimum_coverage_per_pass_ratio=r)
     assert df_filter.empty
 
-    r = pass_ratio + .01
-    df_filter = filter_s1_stack_by_geometric_coverage_per_pass(df_resp,
-                                                               frames,
-                                                               minimum_coverage_per_pass_ratio=r)
+    r = pass_ratio + 0.01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_pass(df_resp, frames, minimum_coverage_per_pass_ratio=r)
     assert df_filter.shape[0] == df_resp.shape[0]
 
 
@@ -117,18 +113,15 @@ def filter_per_frame(CA_20210915_resp):
     frames = [frame_0, frame_1, frame_2]
 
     pass_geometry = df_resp.geometry.unary_union
-    ratio_frame_int = [pass_geometry.intersection(f.footprint_geometry).area / f.footprint_geometry.area
-                       for f in frames]
+    ratio_frame_int = [
+        pass_geometry.intersection(f.footprint_geometry).area / f.footprint_geometry.area for f in frames
+    ]
     min_frame_coverage = min(ratio_frame_int)
 
-    r = min_frame_coverage - .01
-    df_filter = filter_s1_stack_by_geometric_coverage_per_frame(df_resp,
-                                                                frames,
-                                                                minimum_coverage_ratio_per_frame=r)
+    r = min_frame_coverage - 0.01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_frame(df_resp, frames, minimum_coverage_ratio_per_frame=r)
     assert df_filter.empty
 
-    r = min_frame_coverage + .01
-    df_filter = filter_s1_stack_by_geometric_coverage_per_frame(df_resp,
-                                                                frames,
-                                                                minimum_coverage_ratio_per_frame=r)
+    r = min_frame_coverage + 0.01
+    df_filter = filter_s1_stack_by_geometric_coverage_per_frame(df_resp, frames, minimum_coverage_ratio_per_frame=r)
     assert df_filter.shape[0] == df_resp.shape[0]

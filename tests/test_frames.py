@@ -4,10 +4,14 @@ import pandas as pd
 import pytest
 from shapely.geometry import Point
 
-from s1_frame_enumerator import (S1Frame, frames2gdf, gdf2frames,
-                                 get_global_gunw_footprints,
-                                 get_global_s1_frames,
-                                 get_overlapping_s1_frames)
+from s1_frame_enumerator import (
+    S1Frame,
+    frames2gdf,
+    gdf2frames,
+    get_global_gunw_footprints,
+    get_global_s1_frames,
+    get_overlapping_s1_frames,
+)
 from s1_frame_enumerator.s1_frames import get_geometry_by_id
 
 
@@ -18,7 +22,7 @@ def test_frame_initialized_by_id():
 
 def test_get_overlapping_frames():
     # Southern California
-    aoi_geo = Point(-120, 35).buffer(.1)
+    aoi_geo = Point(-120, 35).buffer(0.1)
     frames = get_overlapping_s1_frames(aoi_geo)
 
     tracks = sorted([tn for frame in frames for tn in frame.track_numbers])
@@ -77,7 +81,7 @@ def test_to_ensure_footprints_contain_frames():
     df_extents_subset.sort_values(by='frame_id', inplace=True)
 
     assert df_frames_subset.shape[0] == df_extents_subset.shape[0]
-    assert df_extents_subset.geometry.contains(df_frames_subset.geometry.buffer(-.001)).all()
+    assert df_extents_subset.geometry.contains(df_frames_subset.geometry.buffer(-0.001)).all()
 
 
 def test_frames_at_dateline():
@@ -89,7 +93,7 @@ def test_frames_at_dateline():
         # When hemisphere is passed - no warning should be raised
         for hemisphere in ['east', 'west']:
             with warnings.catch_warnings():
-                warnings.simplefilter("error")
+                warnings.simplefilter('error')
                 S1Frame(frame_id, hemisphere=hemisphere)
 
 
