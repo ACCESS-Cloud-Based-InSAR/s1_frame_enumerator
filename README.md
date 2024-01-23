@@ -1,5 +1,11 @@
 # S1_Frame_Enumerator
 
+[![PyPI license](https://img.shields.io/pypi/l/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
+[![PyPI version](https://img.shields.io/pypi/v/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/s1_frame_enumerator)](https://anaconda.org/conda-forge/s1_frame_enumerator)
+[![Conda platforms](https://img.shields.io/conda/pn/conda-forge/s1_frame_enumerator)](https://anaconda.org/conda-forge/s1_frame_enumerator)
+
 This library enumerates input single look complex (SLC) IDs for reference and secondary imagery to generate a time series of interferograms over an area of interest (AOI) using *fixed spatial frames*. Such SLC imagery can then be used to generate an interferometric time series. Our focus is generating ARIA S1 Geocoded Unwrapped Interferogram (ARIA-S1-GUNW), a standardized, sensor-neutral inteferometric product as described [here](https://github.com/ACCESS-Cloud-Based-InSAR/DockerizedTopsApp) using [ISCE2](https://github.com/isce-framework/isce2).
 
 ## Background
