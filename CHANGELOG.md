@@ -7,6 +7,16 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.0.2]
+
+### Added
+* Adds `pandas` to `pyproject.toml` and `environment.yml`. 
+* Ensures minimum `shapely` version in `pyproject.toml`.
+* Linting of packaging files
+
+### Removed
+* Removes min version on asf_search. 
+
 ## [0.0.1]
 
 Initial release of s1-frame-enumerator, a package for enumerating Sentinel-1 A/B pairs
