@@ -21,7 +21,16 @@ classifiers = [
 
 dynamic = ['version', 'readme']
 
-dependencies = ['geopandas', 'rasterio', 'asf_search', 'tqdm', 'requests']
+dependencies = [
+    'geopandas',
+    'rasterio',
+    'pandas',
+    'asf_search',
+    'tqdm',
+    'requests',
+    'rasterio',
+    'shapely>=2.0',
+]
 
 [project.optional-dependencies]
 develop = [
