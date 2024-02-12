@@ -109,6 +109,12 @@ Let's be more explicit about the possible/anticipated scenarios for modifying st
 3. Activate the environment: `conda activate s1-frame-enumerator`
 4. Install with pip: `pip install -e .`
 
+To use the notebooks, please install the kernel associated with this environment as:
+
+```
+python -m ipykernel install --user --name s1-frame-enumerator
+```
+
 
 ## Contributing
 
