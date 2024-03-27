@@ -52,8 +52,13 @@ def filter_s1_stack_by_geometric_coverage_per_pass(
         warnings.simplefilter('ignore', category=UserWarning)
         intersection_area_for_one_pass = df_stack_one_pass.geometry.intersection(total_frame_geometry).area
         intersection_ratio_for_one_pass = intersection_area_for_one_pass / total_frame_coverage_area
-    dissolved_ind = intersection_ratio_for_one_pass >= minimum_coverage_per_pass_ratio
+    dissolved_ind_area = intersection_ratio_for_one_pass >= minimum_coverage_per_pass_ratio
 
+    # need to check geometric type of SLCs in stack which could potentially be contiguous
+    # even if frames are contiguous
+    dissolved_ind_contig = df_stack_one_pass.geometry.map(lambda geo: geo.geom_type == 'Polygon')
+
+    dissolved_ind = dissolved_ind_area & dissolved_ind_contig
     pass_dates_to_include = df_stack_one_pass[dissolved_ind].repeat_pass_timestamp
     stack_ind = df_stack.repeat_pass_timestamp.isin(pass_dates_to_include)
 

@@ -57,7 +57,7 @@ def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months
     # Note this calculus depends on the repeat pass frequency of Sentinel-1 which is 6
     df_formatted['stack_repeat_pass_id'] = ((julian_dates - julian_dates[0]) // 5).astype(int)
     # Ensure sequential (see: https://stackoverflow.com/a/15074395)
-    df_formatted['stack_repeat_pass_id'] = df_formatted.groupby(['stack_repeat_pass_id']).grouper.group_info[0]
+    df_formatted['stack_repeat_pass_id'] = df_formatted.groupby(['stack_repeat_pass_id']).ngroup()
 
     df_temp = pd.DataFrame(columns=['stack_repeat_pass_id', 'repeat_pass_timestamp'])
     df_temp['stack_repeat_pass_id'] = df_formatted.stack_repeat_pass_id
