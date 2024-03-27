@@ -14,6 +14,10 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Ensures minimum `shapely` version in `pyproject.toml`.
 * Linting of packaging files
 
+### Fixed
+* Ensure SLCs are contiguous (in addition to frames)
+* Future warning related to pandas `grouper`
+
 ### Removed
 * Removes min version on asf_search. 
 
