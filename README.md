@@ -76,6 +76,16 @@ Then, `ifg_data` is a list of dictionaries, each corresponding to a inteferogram
  'geometry': <POLYGON Z ((-121.034 34.871 0, -121.037 34.871 0, -120.807 36.008 0, -117.9...>}
 ```
 
+## Definitions
+
+We use terminology in the code and elsewhere that is worth defining precisely:
+
+1. `frame` - a fixed spatial extent that encompasses data with respect to S1 pass (i.e. for a given track).
+2. `stack` - a collection of SLCs over a *connected* collection of S1 frames. Note if we have a collection of frames across a *disconnected* collection of frames the software will throw an error - you must enumerate each connected component separately. We also ensure stacks have a connected collection of SLCs (just because a collection of frames doesn't mean SLCs will be)
+3. `enumeration` - the pairing of interferograms for a given stack.
+
+Using different combinations of frames over various dates will yield different enumerations.
+
 ## Demonstration
 
 See the [Basic_Demo.ipynb](./notebooks/Basic_Demo.ipynb) for a more complete look at this library and using `GeoPandas` and `matplotlib` to visualize the coverage and time-series.
