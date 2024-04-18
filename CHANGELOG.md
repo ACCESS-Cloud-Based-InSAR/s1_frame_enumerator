@@ -13,6 +13,8 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Adds `pandas` to `pyproject.toml` and `environment.yml`. 
 * Ensures minimum `shapely` version in `pyproject.toml`.
 * Linting of packaging files
+* Docstrings in `stack.py`
+* Updated readme with definitions
 
 ### Fixed
 * Ensure SLCs are contiguous (in addition to frames)
