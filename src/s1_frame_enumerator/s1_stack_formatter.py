@@ -15,6 +15,7 @@ S1_COLUMNS = [
     'orbit',
     'beam_mode',
     'size_gb',
+    'flight_direction',
     'stack_repeat_pass_id',
     'repeat_pass_timestamp',
     'geometry',
@@ -42,6 +43,7 @@ def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months
     df_formatted['beam_mode'] = df_asf['beamModeType']
     df_formatted['size_gb'] = df_asf['bytes'] / 1e9
     df_formatted['geometry'] = df_asf['geometry']
+    df_formatted['flight_direction'] = df_asf['flightDirection']
 
     # Drop duplicate rows and sort by acq time
     df_formatted.drop_duplicates(subset=['slc_id'], inplace=True)

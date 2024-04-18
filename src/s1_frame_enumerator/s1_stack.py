@@ -41,6 +41,20 @@ def query_slc_metadata_over_frame(
 def filter_s1_stack_by_geometric_coverage_per_pass(
     df_stack: gpd.GeoDataFrame, frames: List[S1Frame], minimum_coverage_per_pass_ratio: float = 0.80
 ) -> gpd.GeoDataFrame:
+    """
+    Ensures there is a minimum area coverage over the stack. Also ensures that SLCs within a given pass are connected.
+
+    Parameters
+    ----------
+    df_stack : gpd.GeoDataFrame
+    frames : List[S1Frame]
+    minimum_coverage_per_pass_ratio : float, optional
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+       Filtered stack
+    """
     df_stack_one_pass = df_stack.dissolve(by='repeat_pass_timestamp', aggfunc={'start_time': 'min'}, as_index=False)
 
     frame_geometries = [f.footprint_geometry for f in frames]
@@ -54,8 +68,8 @@ def filter_s1_stack_by_geometric_coverage_per_pass(
         intersection_ratio_for_one_pass = intersection_area_for_one_pass / total_frame_coverage_area
     dissolved_ind_area = intersection_ratio_for_one_pass >= minimum_coverage_per_pass_ratio
 
-    # need to check geometric type of SLCs in stack which could potentially be contiguous
-    # even if frames are contiguous
+    # need to check geometric type of SLCs in stack which could potentially be disconnected
+    # even if frames together are connected component
     dissolved_ind_contig = df_stack_one_pass.geometry.map(lambda geo: geo.geom_type == 'Polygon')
 
     dissolved_ind = dissolved_ind_area & dissolved_ind_contig
@@ -68,6 +82,19 @@ def filter_s1_stack_by_geometric_coverage_per_pass(
 def filter_s1_stack_by_geometric_coverage_per_frame(
     df_stack: gpd.GeoDataFrame, frames: List[S1Frame], minimum_coverage_ratio_per_frame: float = 0.5
 ) -> gpd.GeoDataFrame:
+    """Filters passes that contain a *single* frame that does not contain enough coverage.
+
+    Parameters
+    ----------
+    df_stack : gpd.GeoDataFrame
+    frames : List[S1Frame]
+    minimum_coverage_ratio_per_frame : float, optional
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        Filtered stack
+    """
     df_stack_one_pass = df_stack.dissolve(by='repeat_pass_timestamp', aggfunc={'start_time': 'min'}, as_index=False)
 
     dates_with_not_enough_per_frame_coverage = []
@@ -100,6 +127,29 @@ def get_s1_stack(
     query_start_time: datetime.datetime = None,
     query_stop_time: datetime.datetime = None,
 ) -> gpd.GeoDataFrame:
+    """A stack is defined to be all the SLCs that constitute a single pass along an ascending/descending
+    *contiguous* flight path.
+
+    Parameters
+    ----------
+    frames : List[S1Frame]
+    allowable_months : List[int], optional
+    allowable_polarizations : List[str], optional
+    minimum_coverage_ratio_per_pass : float, optional
+    minimum_coverage_ratio_per_frame : float, optional
+    max_query_results_per_frame : int, optional
+    query_start_time : datetime.datetime, optional
+    query_stop_time : datetime.datetime, optional
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+
+    Raises
+    ------
+    StackFormationError
+        If the frames are (a) not connected, (b) multiple tracks (more than 2 or 2 non-sequential tracks)
+    """
     track_numbers = [tn for f in frames for tn in f.track_numbers]
     unique_track_numbers = list(set(list(track_numbers)))
     n_tracks = len(unique_track_numbers)
