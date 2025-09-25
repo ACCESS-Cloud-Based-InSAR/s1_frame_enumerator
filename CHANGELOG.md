@@ -9,6 +9,10 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.0.3]
 
+### Changed
+* Updated to ruff and removed flake8
+
+
 ### Added
 * Sentinel-1C filtering based on Calibration Date: https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
 

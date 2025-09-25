@@ -1,9 +1,9 @@
-from typing import List
 
 import geopandas as gpd
 import pandas as pd
 from rasterio.crs import CRS
 from shapely.geometry import shape
+
 
 S1_COLUMNS = [
     'slc_id',
@@ -22,7 +22,7 @@ S1_COLUMNS = [
 ]
 
 
-def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months: List[int] = None) -> gpd.GeoDataFrame:
+def format_results_for_sent1_stack(geojson_results: list[dict], allowable_months: list[int] = None) -> gpd.GeoDataFrame:
     geometry = [shape(r['geometry']) for r in geojson_results]
     data = [r['properties'] for r in geojson_results]
 

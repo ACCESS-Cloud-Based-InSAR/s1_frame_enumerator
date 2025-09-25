@@ -51,7 +51,6 @@ def test_get_overlapping_frames():
 
 def test_gdf2frames_consistency():
     """Ensure invertiblility of frames2gdf and gdf2frames"""
-
     # Hawaii
     aoi_geo = Point(-155.5, 19.5).buffer(1)
     frames_0 = get_overlapping_s1_frames(aoi_geo)
