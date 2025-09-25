@@ -28,7 +28,7 @@ def enumerate_dates(
     n_secondary_scenes_per_ref: int = 3,
     n_init_seeds: int = 1,
 ) -> list[tuple]:
-    """Enumerates date pairs
+    """Enumerate date pairs.
 
     Parameters
     ----------
