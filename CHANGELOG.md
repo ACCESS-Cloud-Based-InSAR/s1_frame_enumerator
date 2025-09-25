@@ -7,21 +7,6 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.0.3]
-
-### Changed
-* Updated to ruff and removed flake8
-
-
-### Added
-* Sentinel-1C filtering based on Calibration Date: https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
-* Python 3.13 support.
-
-### Fixed
-* Conda Environment.yml
-* Natural earth world is no longer within geopandas so linked to github url.
-* Unit tests now use the latest micromamba action (previous was not supported).
-
 ## [0.0.2]
 
 ### Added
@@ -30,13 +15,23 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Linting of packaging files
 * Docstrings in `stack.py`
 * Updated readme with definitions
+* Sentinel-1C filtering based on Calibration Date: https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
+* Python 3.13 support.
 
 ### Fixed
 * Ensure SLCs are contiguous (in addition to frames)
 * Future warning related to pandas `grouper`
+* The syntax within Environment.yml (also added ruff)
+* Natural earth world is no longer within geopandas so linked to github url.
+* Unit tests now use the latest micromamba action (previous was not supported).
+
+### Changed
+* Ruff is now linter
 
 ### Removed
 * Removes min version on asf_search. 
+* Flake8 linting in favor of ruff
+
 
 ## [0.0.1]
 
