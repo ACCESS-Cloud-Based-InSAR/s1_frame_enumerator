@@ -15,11 +15,12 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 * Sentinel-1C filtering based on Calibration Date: https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
+* Python 3.13 support.
 
 ### Fixed
 * Conda Environment.yml
 * Natural earth world is no longer within geopandas so linked to github url.
-* Unit tests to latest micromamba.
+* Unit tests now use the latest micromamba action (previous was not supported).
 
 ## [0.0.2]
 
