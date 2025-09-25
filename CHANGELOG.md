@@ -7,6 +7,15 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.0.3]
+
+### Added
+* Sentinel-1C filtering based on Calibration Date: https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
+
+### Fixed
+* Conda Environment.yml
+* Natural earth world is no longer within geopandas so linked to github url.
+
 ## [0.0.2]
 
 ### Added

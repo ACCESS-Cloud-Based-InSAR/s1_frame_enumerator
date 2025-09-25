@@ -5,15 +5,20 @@ from warnings import warn
 
 import asf_search as asf
 import geopandas as gpd
+import pandas as pd
 from asf_search import ASFSearchResults
 from shapely.ops import unary_union
 from tqdm import tqdm
+
 
 from .exceptions import StackFormationError
 from .s1_frames import S1Frame
 from .s1_stack_formatter import format_results_for_sent1_stack
 
 MINIMUM_PER_FRAME_RATIO = 0.20
+MIN_S1C_DATE = pd.Timestamp(
+    '2025-05-19', tz='UTC'
+)  # https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
 
 
 def query_slc_metadata_over_frame(
@@ -117,6 +122,16 @@ def filter_s1_stack_by_geometric_coverage_per_frame(
     return df_stack[stack_ind].reset_index(drop=True)
 
 
+def filter_s1c_data(df_stack: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Filters out S1C data from the stack."""
+    s1c_filter = (df_stack['slc_id'].map(lambda id_: id_[:3] == 'S1C')) & (
+        pd.to_datetime(df_stack['start_time'], utc=True) >= MIN_S1C_DATE
+    )
+    not_s1c_filter = df_stack['slc_id'].map(lambda id_: id_[:3] != 'S1C')
+    df_stack = df_stack[s1c_filter | not_s1c_filter].reset_index(drop=True)
+    return df_stack
+
+
 def get_s1_stack(
     frames: List[S1Frame],
     allowable_months: List[int] = None,
@@ -178,6 +193,7 @@ def get_s1_stack(
         )
 
     df = format_results_for_sent1_stack(results, allowable_months=allowable_months)
+    df = filter_s1c_data(df)
 
     if df.empty:
         warn('There were no results returned', category=UserWarning)
