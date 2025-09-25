@@ -1,4 +1,3 @@
-
 import geopandas as gpd
 import pandas as pd
 from rasterio.crs import CRS
