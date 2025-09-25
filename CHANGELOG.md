@@ -19,6 +19,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 * Conda Environment.yml
 * Natural earth world is no longer within geopandas so linked to github url.
+* Unit tests to latest micromamba.
 
 ## [0.0.2]
 
