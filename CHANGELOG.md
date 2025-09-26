@@ -15,7 +15,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Dependency on parquet for testing
 
 ### Fixed
-* Use of Natural earth within geopandas (deprecated useage)
+* Use of Natural earth within geopandas (deprecated useage) - now use contextily for plotting some background tiles for understanding location of interferograms.
 * Remove ASF warnings related to geometric searches of frames - orient polygons with shapely using `orient_polygon`.
 * Readme instructions for installation.
 
