@@ -1,4 +1,4 @@
-# S1_Frame_Enumerator
+# `S1-Frame-Enumerator`
 
 [![PyPI license](https://img.shields.io/pypi/l/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
@@ -115,7 +115,7 @@ Let's be more explicit about the possible/anticipated scenarios for modifying st
 ## Development Installation
 
 1. Clone the repository and navigate to it
-2. Install the environment: `mamba env update -f environment.yml`
+2. Install the environment: `mamba env create -f environment.yml`
 3. Activate the environment: `conda activate s1-frame-enumerator`
 4. Install with pip: `pip install -e .`
 
@@ -135,7 +135,7 @@ We welcome contributions to this open-source package. To do so:
 3. Make your modifications in your own fork
 4. Make a pull-request (PR) in this repo with the code in your fork and tag the repo owner or a relevant contributor.
 
-We use `flake8` and associated linting packages to ensure some basic code quality (see the `environment.yml`). These will be checked for each commit in a PR.
+We use `ruff` to ensure some basic code quality (see the `environment.yml`). These will be checked for each commit in a PR.
 
 ## Support
 

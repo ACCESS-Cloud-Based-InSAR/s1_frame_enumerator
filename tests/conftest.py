@@ -34,3 +34,10 @@ def CA_20210915_resp() -> dict:
     data_dir = Path(__file__).resolve().parent / 'data'
     json_data = json.load((data_dir / 'CA-subset_2021-09-14_asf_results.json').open())
     return json_data
+
+
+@pytest.fixture(scope='session')
+def df_nz_146_stack() -> gpd.GeoDataFrame:
+    data_dir = Path(__file__).resolve().parent / 'data'
+    df = gpd.read_parquet(data_dir / 'stack__New-Zealand_track_146.parquet')
+    return df
