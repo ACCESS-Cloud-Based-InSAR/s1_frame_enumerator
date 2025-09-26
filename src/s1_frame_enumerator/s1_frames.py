@@ -6,6 +6,7 @@ from warnings import warn
 import geopandas as gpd
 import pandas as pd
 from rasterio.crs import CRS
+from shapely import force_2d, orient_polygons
 from shapely.geometry import Polygon
 
 
@@ -13,6 +14,10 @@ FRAMES_DIR = Path(__file__).parent / 'data'
 FRAMES_PATH = (FRAMES_DIR / 's1_frames_latitude_aligned.geojson.zip').resolve()
 GUNW_EXTENTS_PATH = FRAMES_DIR / 's1_gunw_frame_footprints.geojson.zip'
 GUNW_EXTENTS_PATH = GUNW_EXTENTS_PATH.resolve()
+
+
+def normalize_geometry(geometry: Polygon) -> Polygon:
+    return orient_polygons(force_2d(geometry), exterior_cw=False)
 
 
 @lru_cache
@@ -46,6 +51,7 @@ def get_geometry_by_id(frame_id: int, geometry_type: str, hemisphere: str = None
         )
     if df_frame.shape[0] == 0:
         raise ValueError('The id requested is invalid')
+    df_frame.geometry = df_frame.geometry.map(normalize_geometry)
     return df_frame
 
 

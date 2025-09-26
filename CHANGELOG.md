@@ -14,6 +14,10 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Geometry for enumerated interferograms represent the intersection of the reference and secondary passes within the frame geometry.
 * Dependency on parquet for testing
 
+### Fixed
+* Use of Natural earth within geopandas (deprecated useage)
+* Remove ASF warnings related to geometric searches of frames - orient polygons with shapely using `orient_polygon`.
+
 ## [0.0.2]
 
 ### Added

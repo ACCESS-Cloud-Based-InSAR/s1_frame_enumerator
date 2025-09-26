@@ -29,3 +29,4 @@ dependencies:
   - hyp3_sdk
   - ruff
   - pyarrow
+  - contextily
