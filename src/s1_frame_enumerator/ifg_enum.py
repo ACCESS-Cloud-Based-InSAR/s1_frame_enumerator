@@ -3,12 +3,55 @@ import warnings
 
 import geopandas as gpd
 import pandas as pd
-from shapely import STRtree
+from shapely import Polygon, STRtree
 from tqdm import tqdm
 
 from .exceptions import InvalidStack
 from .s1_frames import S1Frame
-from .s1_stack_formatter import S1_COLUMNS
+
+
+ESSENTIAL_S1_SLC_COLUMNS = [
+    'slc_id',
+    'repeat_pass_timestamp',
+    'stack_repeat_pass_id',
+    'start_time',
+    'stop_time',
+    'geometry',
+]
+
+
+def get_largest_connected_component(
+    df_slc_pass: gpd.GeoDataFrame, reference_geometry: Polygon | None = None
+) -> gpd.GeoDataFrame:
+    union_geom = df_slc_pass.geometry.union_all()
+
+    if union_geom.geom_type in ('MultiPolygon', 'GeometryCollection'):
+        components = [g for g in union_geom.geoms if g.geom_type == 'Polygon']
+    elif union_geom.geom_type == 'Polygon':
+        components = [union_geom]
+    else:
+        raise ValueError(f'Unexpected geometry type: {union_geom.geom_type}')
+
+    if not components:
+        return gpd.GeoDataFrame(crs=df_slc_pass.crs)
+    if len(components) == 1:
+        return df_slc_pass
+
+    if reference_geometry is not None:
+
+        def intersection_area(component: Polygon) -> float:
+            try:
+                return component.intersection(reference_geometry).area
+            except Exception:
+                return 0.0
+
+        largest_component = max(components, key=intersection_area)
+    else:
+        largest_component = max(components, key=lambda comp: comp.area)
+
+    geo_ind = df_slc_pass.intersects(largest_component)
+    df_slc_pass_largest_component = df_slc_pass[geo_ind].reset_index(drop=True)
+    return df_slc_pass_largest_component
 
 
 def viable_secondary_date(
@@ -100,11 +143,19 @@ def select_ifg_pair_from_stack(
     sec_ind = df_stack_subset.repeat_pass_timestamp == sec_date
     df_sec = df_stack_subset[sec_ind].reset_index(drop=True)
 
-    total_intersection_geometry = None
+    reference_geometry = frame.frame_geometry if frame else None
+    df_ref = get_largest_connected_component(df_ref, reference_geometry=reference_geometry)
+    df_sec = get_largest_connected_component(df_sec, reference_geometry=reference_geometry)
+
+    ref_geo = df_ref.geometry.union_all()
+    sec_geo = df_sec.geometry.union_all()
     if frame is None:
-        ref_geo = df_ref.geometry.unary_union
-        sec_geo = df_sec.geometry.unary_union
         total_intersection_geometry = ref_geo.intersection(sec_geo)
+    else:
+        total_intersection_geometry = ref_geo.intersection(sec_geo).intersection(frame.frame_geometry)
+
+    if total_intersection_geometry.geom_type != 'Polygon':
+        return {}
 
     ref_slcs = df_ref.slc_id.tolist()
     sec_slcs = df_sec.slc_id.tolist()
@@ -118,7 +169,7 @@ def select_ifg_pair_from_stack(
         'reference_date': ref_date,
         'secondary_date': sec_date,
         'frame_id': frame.frame_id if frame else frame,
-        'geometry': frame.frame_geometry if frame else total_intersection_geometry,
+        'geometry': total_intersection_geometry,
     }
 
 
@@ -129,7 +180,7 @@ def enumerate_gunw_time_series(
     frames: list[S1Frame] = None,
     n_init_seeds: int = 1,
 ) -> list[dict]:
-    if df_stack.columns.tolist() != S1_COLUMNS:
+    if [k for k in ESSENTIAL_S1_SLC_COLUMNS if k not in df_stack.columns.tolist()]:
         raise InvalidStack('The stack dataframe must be generated using get_s1_stack')
 
     if df_stack.empty:
@@ -149,7 +200,6 @@ def enumerate_gunw_time_series(
         for (ref_date, sec_date) in tqdm(ifg_dates, desc='Date Pairs')
         for frame in frames
     ]
-    # You can still have disconnected geometries because you have multiple
-    # Contiguous areas within the same pass/track.
-    ifg_data = [ifg for ifg in ifg_data if ifg['geometry'].geom_type == 'Polygon']
+    # Remove empty dictionaries
+    ifg_data = [ifg for ifg in ifg_data if ifg]
     return ifg_data
