@@ -112,3 +112,38 @@ def test_enum_by_frames(sample_stack: gpd.GeoDataFrame) -> None:
 def test_invalid_stack(df_stack: pd.DataFrame) -> None:
     with pytest.raises(InvalidStack):
         enumerate_gunw_time_series(df_stack, min_temporal_baseline_days=0, n_secondary_scenes_per_ref=1)
+
+
+def test_geometry_filtering(df_nz_146_stack: gpd.GeoDataFrame) -> None:
+    # See Issue #11: https://github.com/ACCESS-Cloud-Based-InSAR/s1_frame_enumerator/issues/11
+    frame = S1Frame(22745)
+    ifg_data = enumerate_gunw_time_series(
+        df_nz_146_stack, n_init_seeds=3, min_temporal_baseline_days=365, frames=[frame]
+    )
+    ifg_prev_disconnected = [
+        d for d in ifg_data if 'S1B_IW_SLC__1SSV_20161221T173720_20161221T173747_003497_005FA6_A1A2' in d['reference']
+    ]
+
+    expected_ifgs = [
+        {
+            'reference': [
+                'S1B_IW_SLC__1SSV_20161221T173720_20161221T173747_003497_005FA6_A1A2',
+                'S1B_IW_SLC__1SSV_20161221T173745_20161221T173812_003497_005FA6_48FF',
+                'S1B_IW_SLC__1SSV_20161221T173810_20161221T173837_003497_005FA6_D292',
+            ],
+            'secondary': ['S1A_IW_SLC__1SSV_20151221T173830_20151221T173900_009143_00D27B_A55F'],
+        },
+        {
+            'reference': [
+                'S1B_IW_SLC__1SSV_20161221T173720_20161221T173747_003497_005FA6_A1A2',
+                'S1B_IW_SLC__1SSV_20161221T173745_20161221T173812_003497_005FA6_48FF',
+                'S1B_IW_SLC__1SSV_20161221T173810_20161221T173837_003497_005FA6_D292',
+            ],
+            'secondary': ['S1A_IW_SLC__1SSV_20151127T173831_20151127T173901_008793_00C8AE_14FB'],
+        },
+    ]
+
+    assert len(ifg_prev_disconnected) == len(expected_ifgs)
+    for ifg, expected_ifg in zip(ifg_prev_disconnected, expected_ifgs):
+        assert ifg['reference'] == expected_ifg['reference']
+        assert ifg['secondary'] == expected_ifg['secondary']
