@@ -1,14 +1,38 @@
 # S1_Frame_Enumerator
 
+[![PyPI license](https://img.shields.io/pypi/l/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
+[![PyPI version](https://img.shields.io/pypi/v/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/s1_frame_enumerator)](https://anaconda.org/conda-forge/s1_frame_enumerator)
+[![Conda platforms](https://img.shields.io/conda/pn/conda-forge/s1_frame_enumerator)](https://anaconda.org/conda-forge/s1_frame_enumerator)
+
 This library enumerates input single look complex (SLC) IDs for reference and secondary imagery to generate a time series of interferograms over an area of interest (AOI) using *fixed spatial frames*. Such SLC imagery can then be used to generate an interferometric time series. Our focus is generating ARIA S1 Geocoded Unwrapped Interferogram (ARIA-S1-GUNW), a standardized, sensor-neutral inteferometric product as described [here](https://github.com/ACCESS-Cloud-Based-InSAR/DockerizedTopsApp) using [ISCE2](https://github.com/isce-framework/isce2).
 
-## Background
+## Installation
+
+In order to easily manage dependencies, we recommend using dedicated project environments
+via [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+or [Python virtual environments](https://docs.python.org/3/tutorial/venv.html).
+
+`s1_frame_enumerator` can be installed into a conda environment with
+
+```
+conda install -c conda-forge s1_frame_enumerator
+```
+
+or into a virtual environment with
+
+```
+python -m pip install s1_frame_enumerator
+```
+
+Currently, python 3.11+ is supported. See development installation below.
+
+## Background and Usage
 
 Sentinel-1 SLC enumeration for interferometric processing is notoriously challenging despite its simple description. This is partly because ESA frame definitions are not spatially fixed in time and it is hard to ensure complete spatial coverage across date pairs. Our fixed frame approach attempts to circumvent this challenge by ensuring SLC pairs are enunumerated across fixed spatial areas. We also ensure consistent overlap (at least 1 burst) across inteferometric products to ensure interferometric products can be stitched for downstream analysis.
 
 This library relies on [`asf-search`](https://github.com/asfadmin/Discovery-asf_search) to enumerate Sentinel-1 A/B pairs from fixed frames derived from ESA's burst [map](https://sar-mpc.eu/test-data-sets/). We describe the generation of the "fixed-frames" in this [repository](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-generation). Using this frame map (stored a zip file within this library), we enumerate SLCs that cover contiguous collection of frames. The frames Northern and Souther boundaries are aligned with latitude lines to ensure GUNW products and the frame definitions are consistent. We have two datasets the latitude-aligned [frames](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/blob/58f7e62a4efd0784766da21ab7f618073fe9f347/s1_frame_enumerator/data/s1_frames_latitude_aligned.geojson.zip) and the expected GUNW product [extents](https://github.com/ACCESS-Cloud-Based-InSAR/s1-frame-enumerator/blob/58f7e62a4efd0784766da21ab7f618073fe9f347/s1_frame_enumerator/data/s1_gunw_frame_footprints.geojson.zip).
-
-## Usage
 
 Here is a summary of the API:
 
@@ -52,6 +76,16 @@ Then, `ifg_data` is a list of dictionaries, each corresponding to a inteferogram
  'geometry': <POLYGON Z ((-121.034 34.871 0, -121.037 34.871 0, -120.807 36.008 0, -117.9...>}
 ```
 
+## Definitions
+
+We use terminology in the code and elsewhere that is worth defining precisely:
+
+1. `frame` - a fixed spatial extent that encompasses data with respect to S1 pass (i.e. for a given track).
+2. `stack` - a collection of SLCs over a *connected* collection of S1 frames. Note if we have a collection of frames across a *disconnected* collection of frames the software will throw an error - you must enumerate each connected component separately. We also ensure stacks have a connected collection of SLCs (just because a collection of frames doesn't mean SLCs will be)
+3. `enumeration` - the pairing of interferograms for a given stack.
+
+Using different combinations of frames over various dates will yield different enumerations.
+
 ## Demonstration
 
 See the [Basic_Demo.ipynb](./notebooks/Basic_Demo.ipynb) for a more complete look at this library and using `GeoPandas` and `matplotlib` to visualize the coverage and time-series.
@@ -78,15 +112,19 @@ Let's be more explicit about the possible/anticipated scenarios for modifying st
 3. To ensure higher number of dates in the stack: trouble shoot with per frame and per pass coverage ratios in `get_s1_stack`. Lowering the per frame and pass ratios permits more dates to be included, but the total time series may have a lower spatial coverage. ISCE2 requires a minimum number of bursts to do processing. We recommend that every frame have at least 25% coverage to be safe.
 4. Enumerating (temporally dense) interferograms over island chains will likely just be hard particulary because Sentinel-1 will turn off and on over the ocean.
 
-
-## Installation
+## Development Installation
 
 1. Clone the repository and navigate to it
 2. Install the environment: `mamba env update -f environment.yml`
 3. Activate the environment: `conda activate s1-frame-enumerator`
-4. Install with pip: `pip install .`
+4. Install with pip: `pip install -e .`
 
-For development, use `pip install -e .` so updates are instantly seen in by the interpreter.
+To use the notebooks, please install the kernel associated with this environment as:
+
+```
+python -m ipykernel install --user --name s1-frame-enumerator
+```
+
 
 ## Contributing
 

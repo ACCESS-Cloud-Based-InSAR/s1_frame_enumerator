@@ -1,9 +1,8 @@
-from typing import List
-
 import geopandas as gpd
 import pandas as pd
 from rasterio.crs import CRS
 from shapely.geometry import shape
+
 
 S1_COLUMNS = [
     'slc_id',
@@ -15,13 +14,14 @@ S1_COLUMNS = [
     'orbit',
     'beam_mode',
     'size_gb',
+    'flight_direction',
     'stack_repeat_pass_id',
     'repeat_pass_timestamp',
     'geometry',
 ]
 
 
-def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months: List[int] = None) -> gpd.GeoDataFrame:
+def format_results_for_sent1_stack(geojson_results: list[dict], allowable_months: list[int] = None) -> gpd.GeoDataFrame:
     geometry = [shape(r['geometry']) for r in geojson_results]
     data = [r['properties'] for r in geojson_results]
 
@@ -42,6 +42,7 @@ def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months
     df_formatted['beam_mode'] = df_asf['beamModeType']
     df_formatted['size_gb'] = df_asf['bytes'] / 1e9
     df_formatted['geometry'] = df_asf['geometry']
+    df_formatted['flight_direction'] = df_asf['flightDirection']
 
     # Drop duplicate rows and sort by acq time
     df_formatted.drop_duplicates(subset=['slc_id'], inplace=True)
@@ -57,7 +58,7 @@ def format_results_for_sent1_stack(geojson_results: List[dict], allowable_months
     # Note this calculus depends on the repeat pass frequency of Sentinel-1 which is 6
     df_formatted['stack_repeat_pass_id'] = ((julian_dates - julian_dates[0]) // 5).astype(int)
     # Ensure sequential (see: https://stackoverflow.com/a/15074395)
-    df_formatted['stack_repeat_pass_id'] = df_formatted.groupby(['stack_repeat_pass_id']).grouper.group_info[0]
+    df_formatted['stack_repeat_pass_id'] = df_formatted.groupby(['stack_repeat_pass_id']).ngroup()
 
     df_temp = pd.DataFrame(columns=['stack_repeat_pass_id', 'repeat_pass_timestamp'])
     df_temp['stack_repeat_pass_id'] = df_formatted.stack_repeat_pass_id
