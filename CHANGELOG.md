@@ -10,7 +10,9 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.0.3] - 2025-09-26
 
 ### Added
-* Filter for disconnected interferograms
+* Filter for disconnected interferograms - we now take the largest connected component within a frame and utilize this to identify SLCs from reference/secondary passes
+* Geometry for enumerated interferograms represent the intersection of the reference and secondary passes within the frame geometry.
+* Dependency on parquet for testing
 
 ## [0.0.2]
 
