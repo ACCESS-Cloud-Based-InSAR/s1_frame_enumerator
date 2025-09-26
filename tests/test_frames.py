@@ -15,12 +15,12 @@ from s1_frame_enumerator import (
 from s1_frame_enumerator.s1_frames import get_geometry_by_id
 
 
-def test_frame_initialized_by_id():
+def test_frame_initialized_by_id() -> None:
     frame = S1Frame(9849)
     assert frame.track_numbers == [64]
 
 
-def test_get_overlapping_frames():
+def test_get_overlapping_frames() -> None:
     # Southern California
     aoi_geo = Point(-120, 35).buffer(0.1)
     frames = get_overlapping_s1_frames(aoi_geo)
@@ -49,9 +49,8 @@ def test_get_overlapping_frames():
     assert len(frames) == 1
 
 
-def test_gdf2frames_consistency():
-    """Ensure invertiblility of frames2gdf and gdf2frames"""
-
+def test_gdf2frames_consistency() -> None:
+    """Ensure invertiblility of frames2gdf and gdf2frames."""
     # Hawaii
     aoi_geo = Point(-155.5, 19.5).buffer(1)
     frames_0 = get_overlapping_s1_frames(aoi_geo)
@@ -64,7 +63,7 @@ def test_gdf2frames_consistency():
     assert df_frames_0.equals(df_frames_1)
 
 
-def test_to_ensure_footprints_contain_frames():
+def test_to_ensure_footprints_contain_frames() -> None:
     df_frames = get_global_s1_frames()
     df_extents = get_global_gunw_footprints()
 
@@ -84,7 +83,7 @@ def test_to_ensure_footprints_contain_frames():
     assert df_extents_subset.geometry.contains(df_frames_subset.geometry.buffer(-0.001)).all()
 
 
-def test_frames_at_dateline():
+def test_frames_at_dateline() -> None:
     # Make sure no warnings are passed
     for frame_id in [22738, 4553]:
         # When no hemisphere is passed, raise a UserWarning
@@ -97,7 +96,7 @@ def test_frames_at_dateline():
                 S1Frame(frame_id, hemisphere=hemisphere)
 
 
-def test_large_frame_extent_error():
+def test_large_frame_extent_error() -> None:
     df_frame_0 = get_geometry_by_id(4553, 'frame', hemisphere='west')
     df_frame_1 = get_geometry_by_id(4553, 'frame', hemisphere='east')
     df_frame_2 = get_geometry_by_id(4554, 'frame', hemisphere='east')
@@ -110,7 +109,7 @@ def test_large_frame_extent_error():
     assert len(gdf2frames(df)) == 2
 
 
-def test_frame_construction_error():
+def test_frame_construction_error() -> None:
     with pytest.raises(ValueError):
         # Frame does not exist
         S1Frame(-1)

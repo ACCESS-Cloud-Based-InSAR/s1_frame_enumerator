@@ -1,6 +1,5 @@
 import datetime
 import warnings
-from typing import List
 
 import geopandas as gpd
 import pandas as pd
@@ -24,12 +23,12 @@ def viable_secondary_date(
 
 
 def enumerate_dates(
-    dates: List[pd.Timestamp],
+    dates: list[pd.Timestamp],
     min_temporal_baseline_days: int,
     n_secondary_scenes_per_ref: int = 3,
     n_init_seeds: int = 1,
-) -> List[tuple]:
-    """Enumerates date pairs
+) -> list[tuple]:
+    """Enumerate date pairs.
 
     Parameters
     ----------
@@ -127,9 +126,9 @@ def enumerate_gunw_time_series(
     df_stack: gpd.GeoDataFrame,
     min_temporal_baseline_days: int = 0,
     n_secondary_scenes_per_ref: int = 3,
-    frames: List[S1Frame] = None,
+    frames: list[S1Frame] = None,
     n_init_seeds: int = 1,
-) -> List[dict]:
+) -> list[dict]:
     if df_stack.columns.tolist() != S1_COLUMNS:
         raise InvalidStack('The stack dataframe must be generated using get_s1_stack')
 

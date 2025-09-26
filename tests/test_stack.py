@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import Any
+
 import pytest
 from shapely.ops import unary_union
 
@@ -11,7 +14,7 @@ from s1_frame_enumerator.s1_stack import (
 from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS, format_results_for_sent1_stack
 
 
-def test_disconnected_frames_and_same_track():
+def test_disconnected_frames_and_same_track() -> None:
     frame_0 = S1Frame(9846)
     frame_1 = S1Frame(9848)
 
@@ -21,7 +24,7 @@ def test_disconnected_frames_and_same_track():
         get_s1_stack([frame_0, frame_1])
 
 
-def test_different_tracks_and_connected_geometry():
+def test_different_tracks_and_connected_geometry() -> None:
     frame_0 = S1Frame(21249)
     frame_1 = S1Frame(22439)
 
@@ -34,8 +37,10 @@ def test_different_tracks_and_connected_geometry():
         get_s1_stack([frame_0, frame_1])
 
 
-def test_allowable_months(monkeypatch, asf_results_from_query_by_frame):
-    def mock_response(*args, **kwargs):
+def test_allowable_months(
+    monkeypatch: pytest.MonkeyPatch, asf_results_from_query_by_frame: Callable[[int], list[dict]]
+) -> None:
+    def mock_response(*args: Any, **kwargs: Any) -> list[dict]:  # noqa: ANN401
         results_0 = asf_results_from_query_by_frame(9847)
         results_1 = asf_results_from_query_by_frame(9848)
         return results_0 + results_1
@@ -51,8 +56,10 @@ def test_allowable_months(monkeypatch, asf_results_from_query_by_frame):
     assert stack_months.isin([month_num]).all()
 
 
-def test_column_structure(monkeypatch, asf_results_from_query_by_frame):
-    def mock_response(*args, **kwargs):
+def test_column_structure(
+    monkeypatch: pytest.MonkeyPatch, asf_results_from_query_by_frame: Callable[[int], list[dict]]
+) -> None:
+    def mock_response(*args: Any, **kwargs: Any) -> list[dict]:  # noqa: ANN401
         return asf_results_from_query_by_frame(9847)
 
     monkeypatch.setattr(s1_stack, 'query_slc_metadata_over_frame', mock_response)
@@ -61,12 +68,14 @@ def test_column_structure(monkeypatch, asf_results_from_query_by_frame):
     assert df_stack.columns.tolist() == S1_COLUMNS
 
 
-def test_sequential_tracks(monkeypatch, asf_results_from_query_by_frame):
+def test_sequential_tracks(
+    monkeypatch: pytest.MonkeyPatch, asf_results_from_query_by_frame: Callable[[int], list[dict]]
+) -> None:
     frame_0 = S1Frame(13403)
     frame_1 = S1Frame(13404)
     frames = [frame_0, frame_1]
 
-    def mock_response(*args, **kwargs):
+    def mock_response(*args: Any, **kwargs: Any) -> list[dict]:  # noqa: ANN401
         results_0 = asf_results_from_query_by_frame(13403)
         results_1 = asf_results_from_query_by_frame(13404)
         return results_0 + results_1
@@ -78,7 +87,7 @@ def test_sequential_tracks(monkeypatch, asf_results_from_query_by_frame):
     assert track_numbers == [86, 87]
 
 
-def filter_per_pass(CA_20210915_resp):
+def filter_per_pass(CA_20210915_resp: dict) -> None:
     # The resp data for one date for the first 2 frames
     data_json = CA_20210915_resp
     df_resp = format_results_for_sent1_stack(data_json)
@@ -102,7 +111,7 @@ def filter_per_pass(CA_20210915_resp):
     assert df_filter.shape[0] == df_resp.shape[0]
 
 
-def filter_per_frame(CA_20210915_resp):
+def filter_per_frame(CA_20210915_resp: dict) -> None:
     # The resp data for one date for the first 2 frames
     data_json = CA_20210915_resp
     df_resp = format_results_for_sent1_stack(data_json)

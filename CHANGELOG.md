@@ -15,13 +15,23 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Linting of packaging files
 * Docstrings in `stack.py`
 * Updated readme with definitions
+* Sentinel-1C filtering based on Calibration Date: https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
+* Python 3.13 support.
 
 ### Fixed
 * Ensure SLCs are contiguous (in addition to frames)
 * Future warning related to pandas `grouper`
+* The syntax within Environment.yml (also added ruff)
+* Natural earth world is no longer within geopandas so linked to github url.
+* Unit tests now use the latest micromamba action (previous was not supported).
+
+### Changed
+* Ruff is now linter
 
 ### Removed
 * Removes min version on asf_search. 
+* Flake8 linting in favor of ruff
+
 
 ## [0.0.1]
 

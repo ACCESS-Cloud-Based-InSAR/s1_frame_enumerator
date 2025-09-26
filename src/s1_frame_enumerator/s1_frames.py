@@ -1,13 +1,13 @@
 from dataclasses import asdict, dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Optional
 from warnings import warn
 
 import geopandas as gpd
 import pandas as pd
 from rasterio.crs import CRS
 from shapely.geometry import Polygon
+
 
 FRAMES_DIR = Path(__file__).parent / 'data'
 FRAMES_PATH = (FRAMES_DIR / 's1_frames_latitude_aligned.geojson.zip').resolve()
@@ -41,7 +41,7 @@ def get_geometry_by_id(frame_id: int, geometry_type: str, hemisphere: str = None
         df_frame = df_frame.reset_index(drop=True)
     if df_frame.shape[0] > 1:
         warn(
-            'The frame you requested has multiple geometries associated to it.' 'This is due to the dateline',
+            'The frame you requested has multiple geometries associated to it.This is due to the dateline',
             category=UserWarning,
         )
     if df_frame.shape[0] == 0:
@@ -50,14 +50,14 @@ def get_geometry_by_id(frame_id: int, geometry_type: str, hemisphere: str = None
 
 
 @dataclass
-class S1Frame(object):
+class S1Frame:
     frame_id: int
-    hemisphere: Optional[str] = None
-    track_numbers: List[int] = field(init=False)
+    hemisphere: str | None = None
+    track_numbers: list[int] = field(init=False)
     frame_geometry: Polygon = field(init=False)
     footprint_geometry: Polygon = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         df_frame = get_geometry_by_id(self.frame_id, 'frame', hemisphere=self.hemisphere)
         # Frame Geometry lookup
         self.frame_geometry = df_frame.geometry.iloc[0]
@@ -73,13 +73,13 @@ class S1Frame(object):
         df_footprint = get_geometry_by_id(self.frame_id, 'footprint', hemisphere=self.hemisphere)
         self.footprint_geometry = df_footprint.geometry.iloc[0]
 
-    def to_gdf(self, use_footprint_geometry: bool = False):
+    def to_gdf(self, use_footprint_geometry: bool = False) -> gpd.GeoDataFrame:
         return frames2gdf([self], use_footprint_geometry=use_footprint_geometry)
 
 
 def get_overlapping_s1_frames(
     geometry: Polygon,
-    track_numbers: List[int] = None,
+    track_numbers: list[int] = None,
 ) -> gpd.GeoDataFrame:
     df_s1_frames = get_global_s1_frames()
     # Note that intersection across frames near dateline will be correct as geometries are separated
@@ -109,7 +109,7 @@ def get_overlapping_s1_frames(
     return frames
 
 
-def gdf2frames(df_frames: gpd.GeoDataFrame) -> List[S1Frame]:
+def gdf2frames(df_frames: gpd.GeoDataFrame) -> list[S1Frame]:
     xmin, _, xmax, _ = df_frames.total_bounds
     hemisphere = None
     if xmax - xmin > 180:
@@ -122,7 +122,7 @@ def gdf2frames(df_frames: gpd.GeoDataFrame) -> List[S1Frame]:
     return [S1Frame(frame_id=r['frame_id'], hemisphere=hemisphere) for r in records]
 
 
-def frames2gdf(s1frames: List[S1Frame], use_footprint_geometry=False) -> gpd.GeoDataFrame:
+def frames2gdf(s1frames: list[S1Frame], use_footprint_geometry: bool = False) -> gpd.GeoDataFrame:
     records = [asdict(frame) for frame in s1frames]
     geometry = [r.pop('frame_geometry') for r in records]
     footprint_geometry = [r.pop('footprint_geometry') for r in records]

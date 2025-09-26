@@ -1,5 +1,6 @@
 import datetime
 
+import geopandas as gpd
 import pandas as pd
 import pytest
 
@@ -9,7 +10,7 @@ from s1_frame_enumerator.ifg_enum import select_ifg_pair_from_stack
 from s1_frame_enumerator.s1_stack_formatter import S1_COLUMNS
 
 
-def test_enum_dates_with_min_baseline():
+def test_enum_dates_with_min_baseline() -> None:
     dates = sorted([datetime.datetime(2020 + i, j, 1) for i in range(2) for j in range(1, 13)])
     date_pairs = enumerate_dates(dates, min_temporal_baseline_days=0, n_secondary_scenes_per_ref=1)
 
@@ -19,7 +20,7 @@ def test_enum_dates_with_min_baseline():
     assert date_pairs_expected == date_pairs_sorted
 
 
-def test_enum_dates_with_31_day_baseline():
+def test_enum_dates_with_31_day_baseline() -> None:
     n_dates = 100
     dates = sorted([datetime.datetime(2021, 1, 1) + datetime.timedelta(days=j) for j in range(n_dates)])
 
@@ -44,7 +45,7 @@ def test_enum_dates_with_31_day_baseline():
         n_pairs_lower_seed = n_pairs
 
 
-def test_enum_dates_with_3_neighbors():
+def test_enum_dates_with_3_neighbors() -> None:
     dates = [datetime.datetime(2021, 1, 1) + datetime.timedelta(days=j) for j in range(5)]
 
     for n_seeds in range(1, 5):
@@ -68,7 +69,7 @@ def test_enum_dates_with_3_neighbors():
         assert date_pairs_expected == date_pairs
 
 
-def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
+def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack: gpd.GeoDataFrame) -> None:
     frames = [S1Frame(21248), S1Frame(21249)]
 
     ref_date = pd.Timestamp('2022-12-20', tz='UTC')
@@ -86,7 +87,7 @@ def test_select_valid_ifg_pairs_using_frame_and_dates(sample_stack):
     assert len(data['reference']) == 3
 
 
-def test_enum_by_track(sample_stack):
+def test_enum_by_track(sample_stack: gpd.GeoDataFrame) -> None:
     data = enumerate_gunw_time_series(
         sample_stack, min_temporal_baseline_days=0, n_secondary_scenes_per_ref=1, frames=None
     )
@@ -96,7 +97,7 @@ def test_enum_by_track(sample_stack):
     assert len(data) == expected_num_of_ifgs
 
 
-def test_enum_by_frames(sample_stack):
+def test_enum_by_frames(sample_stack: gpd.GeoDataFrame) -> None:
     frames = [S1Frame(21248), S1Frame(21249)]
     data = enumerate_gunw_time_series(
         sample_stack, min_temporal_baseline_days=0, n_secondary_scenes_per_ref=1, frames=frames
@@ -108,6 +109,6 @@ def test_enum_by_frames(sample_stack):
 
 
 @pytest.mark.parametrize('df_stack', [pd.DataFrame({'dummy': list(range(10))}), pd.DataFrame(columns=S1_COLUMNS)])
-def test_invalid_stack(df_stack):
+def test_invalid_stack(df_stack: pd.DataFrame) -> None:
     with pytest.raises(InvalidStack):
         enumerate_gunw_time_series(df_stack, min_temporal_baseline_days=0, n_secondary_scenes_per_ref=1)

@@ -1,10 +1,10 @@
 import datetime
 import warnings
-from typing import List
 from warnings import warn
 
 import asf_search as asf
 import geopandas as gpd
+import pandas as pd
 from asf_search import ASFSearchResults
 from shapely.ops import unary_union
 from tqdm import tqdm
@@ -13,13 +13,17 @@ from .exceptions import StackFormationError
 from .s1_frames import S1Frame
 from .s1_stack_formatter import format_results_for_sent1_stack
 
+
 MINIMUM_PER_FRAME_RATIO = 0.20
+MIN_S1C_DATE = pd.Timestamp(
+    '2025-05-19', tz='UTC'
+)  # https://sentinels.copernicus.eu/-/sentinel-1c-products-are-now-calibrated
 
 
 def query_slc_metadata_over_frame(
     frame: S1Frame,
     max_results_per_frame: int = 100_000,
-    allowable_polarizations: List[str] = ['VV', 'VV+VH'],
+    allowable_polarizations: list[str] = ['VV', 'VV+VH'],
     start_time: datetime.datetime = None,
     stop_time: datetime.datetime = None,
 ) -> ASFSearchResults:
@@ -39,10 +43,10 @@ def query_slc_metadata_over_frame(
 
 
 def filter_s1_stack_by_geometric_coverage_per_pass(
-    df_stack: gpd.GeoDataFrame, frames: List[S1Frame], minimum_coverage_per_pass_ratio: float = 0.80
+    df_stack: gpd.GeoDataFrame, frames: list[S1Frame], minimum_coverage_per_pass_ratio: float = 0.80
 ) -> gpd.GeoDataFrame:
     """
-    Ensures there is a minimum area coverage over the stack. Also ensures that SLCs within a given pass are connected.
+    Ensure there is a minimum area coverage over the stack. Also ensures that SLCs within a given pass are connected.
 
     Parameters
     ----------
@@ -80,9 +84,9 @@ def filter_s1_stack_by_geometric_coverage_per_pass(
 
 
 def filter_s1_stack_by_geometric_coverage_per_frame(
-    df_stack: gpd.GeoDataFrame, frames: List[S1Frame], minimum_coverage_ratio_per_frame: float = 0.5
+    df_stack: gpd.GeoDataFrame, frames: list[S1Frame], minimum_coverage_ratio_per_frame: float = 0.5
 ) -> gpd.GeoDataFrame:
-    """Filters passes that contain a *single* frame that does not contain enough coverage.
+    """Filter stack by geometric coverage per frame.
 
     Parameters
     ----------
@@ -117,17 +121,30 @@ def filter_s1_stack_by_geometric_coverage_per_frame(
     return df_stack[stack_ind].reset_index(drop=True)
 
 
+def filter_s1c_data(df_stack: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Filter out S1C data from the stack."""
+    s1c_filter = (df_stack['slc_id'].map(lambda id_: id_[:3] == 'S1C')) & (
+        pd.to_datetime(df_stack['start_time'], utc=True) >= MIN_S1C_DATE
+    )
+    not_s1c_filter = df_stack['slc_id'].map(lambda id_: id_[:3] != 'S1C')
+    df_stack = df_stack[s1c_filter | not_s1c_filter].reset_index(drop=True)
+    return df_stack
+
+
 def get_s1_stack(
-    frames: List[S1Frame],
-    allowable_months: List[int] = None,
-    allowable_polarizations: List[str] = ['VV', 'VV+VH'],
+    frames: list[S1Frame],
+    allowable_months: list[int] = None,
+    allowable_polarizations: list[str] = ['VV', 'VV+VH'],
     minimum_coverage_ratio_per_pass: float = 0.80,
     minimum_coverage_ratio_per_frame: float = 0.25,
     max_query_results_per_frame: int = 100_000,
     query_start_time: datetime.datetime = None,
     query_stop_time: datetime.datetime = None,
 ) -> gpd.GeoDataFrame:
-    """A stack is defined to be all the SLCs that constitute a single pass along an ascending/descending
+    """
+    Generate a stack of SLCs from a list of frames.
+
+    A stack is defined to be all the SLCs that constitute a single pass along an ascending/descending
     *contiguous* flight path.
 
     Parameters
@@ -178,6 +195,7 @@ def get_s1_stack(
         )
 
     df = format_results_for_sent1_stack(results, allowable_months=allowable_months)
+    df = filter_s1c_data(df)
 
     if df.empty:
         warn('There were no results returned', category=UserWarning)
