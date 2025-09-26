@@ -149,4 +149,7 @@ def enumerate_gunw_time_series(
         for (ref_date, sec_date) in tqdm(ifg_dates, desc='Date Pairs')
         for frame in frames
     ]
+    # You can still have disconnected geometries because you have multiple
+    # Contiguous areas within the same pass/track.
+    ifg_data = [ifg for ifg in ifg_data if ifg['geometry'].geom_type == 'Polygon']
     return ifg_data

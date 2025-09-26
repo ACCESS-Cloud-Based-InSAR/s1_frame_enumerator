@@ -7,6 +7,11 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.0.3] - 2025-09-26
+
+### Added
+* Filter for disconnected interferograms
+
 ## [0.0.2]
 
 ### Added
