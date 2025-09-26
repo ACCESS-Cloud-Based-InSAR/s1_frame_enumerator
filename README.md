@@ -1,4 +1,4 @@
-# `S1-Frame-Enumerator`
+# `S1_Frame_Enumerator`
 
 [![PyPI license](https://img.shields.io/pypi/l/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/s1_frame_enumerator.svg)](https://pypi.python.org/pypi/s1_frame_enumerator/)
