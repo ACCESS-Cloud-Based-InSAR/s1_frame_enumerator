@@ -17,6 +17,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 * Use of Natural earth within geopandas (deprecated useage)
 * Remove ASF warnings related to geometric searches of frames - orient polygons with shapely using `orient_polygon`.
+* Readme instructions for installation.
 
 ## [0.0.2]
 
